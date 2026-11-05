@@ -454,7 +454,9 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .cartao-com { padding: 24px 22px; }
   .titulo-sec { flex-direction: column; align-items: flex-start; gap: 12px; }
   .setas { align-self: flex-end; margin-top: -40px; }
-  .categorias { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
+  /* só desliza para os lados: sem elevação do cartão ativo, e a sombra cabe no padding vertical */
+  .categorias { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none; margin: -10px -16px; padding: 10px 16px; }
+  .categoria:hover, .categoria.on { transform: none; }
   .categorias::after { content: ""; flex: 0 0 8px; }
   .categorias::-webkit-scrollbar { display: none; }
   .categoria { flex: 0 0 104px; scroll-snap-align: start; padding: 16px 6px 12px; font-size: 12.5px; gap: 8px; }
