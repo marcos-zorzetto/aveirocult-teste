@@ -53,7 +53,14 @@ function partilha(titulo) {
 }
 
 function mostrarEvento(e) {
-  const quando = `${dataLonga(e.data)}${e.hora ? ", às " + esc(e.hora.slice(0, 5)) : ""}${e.data_fim && e.data_fim !== e.data ? " até " + dataLonga(e.data_fim) : ""}`;
+  const hora = e.hora ? ", às " + esc(e.hora.slice(0, 5)) : "";
+  const semanal = e.recorrencia === "semanal" && (e.dias_semana || []).length;
+  const diasNomes = semanal ? [1, 2, 3, 4, 5, 6, 0].filter(d => e.dias_semana.includes(d)).map(d => DIAS[d].replace("-feira", "")) : [];
+  const quando = semanal
+    ? `Todas as semanas: ${diasNomes.join(", ").replace(/, ([^,]*)$/, " e $1")}${hora}${e.repete_ate ? ", até " + dataLonga(e.repete_ate) : ""}${e.proxima_data ? `<br><small>Próxima: ${dataLonga(e.proxima_data)}</small>` : ""}`
+    : e.data_fim && e.data_fim.slice(0, 10) !== e.data
+      ? `De ${dataLonga(e.data)} a ${dataLonga(e.data_fim.slice(0, 10))}${hora}`
+      : `${dataLonga(e.data)}${hora}`;
   const onde = [e.local, e.concelho].filter(Boolean).join(", ");
   const tags = (e.tags || []).map(t => `<a class="pg-tag" href="./#agenda">#${esc(t)}</a>`).join("");
   $("#conteudo").innerHTML = `
@@ -73,7 +80,9 @@ function mostrarEvento(e) {
       <a class="btn btn-contorno" href="./#agenda">Ver mais eventos</a>
     </div>`;
   meta(e.titulo, (e.descricao || "").slice(0, 155), e.imagem);
-  ld({ "@context": "https://schema.org", "@type": "Event", name: e.titulo, startDate: e.hora ? `${e.data}T${e.hora.slice(0, 5)}` : e.data, ...(e.data_fim ? { endDate: e.data_fim } : {}),
+  const inicio = e.proxima_data || e.data, DIAS_SCHEMA = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  ld({ "@context": "https://schema.org", "@type": "Event", name: e.titulo, startDate: e.hora ? `${inicio}T${e.hora.slice(0, 5)}` : inicio, ...(e.data_fim && !semanal ? { endDate: e.data_fim.slice(0, 10) } : {}),
+    ...(semanal ? { eventSchedule: { "@type": "Schedule", repeatFrequency: "P1W", byDay: e.dias_semana.map(d => "https://schema.org/" + DIAS_SCHEMA[d]), startDate: e.data, ...(e.repete_ate ? { endDate: e.repete_ate } : {}), ...(e.hora ? { startTime: e.hora.slice(0, 5) } : {}) } } : {}),
     eventStatus: "https://schema.org/EventScheduled", eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: { "@type": "Place", name: e.local || e.concelho || "Distrito de Aveiro", address: { "@type": "PostalAddress", addressLocality: e.concelho || "Aveiro", addressRegion: "Aveiro", addressCountry: "PT" } },
     ...(e.imagem ? { image: [e.imagem] } : {}), description: (e.descricao || "").slice(0, 500), ...(e.link ? { url: ligacao(e.link) } : {}),

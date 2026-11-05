@@ -47,7 +47,7 @@ async function carregar() {
     <div class="item-corpo">
       <span class="etiq">${i.tipo === "evento" ? "Evento" : "Artista"} <i>· ${esc(i.categoria || "")}${i.concelho ? " · " + esc(i.concelho) : ""}</i></span>
       <h3>${esc(i.titulo)}</h3>
-      ${i.tipo === "evento" ? `<p class="meta">${dataPt(i.data)}${i.hora ? " · " + esc(i.hora.slice(0, 5)) : ""}${i.local ? " · " + esc(i.local) : ""}</p>` : ""}
+      ${i.tipo === "evento" ? `<p class="meta">${i.recorrencia === "semanal" ? `<b>Todas as semanas</b> (${(i.dias_semana || []).map(d => ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][d]).join(", ")})${i.repete_ate ? " até " + dataPt(i.repete_ate) : ""} · desde ${dataPt(i.data)}` : `${dataPt(i.data)}${i.data_fim && i.data_fim.slice(0, 10) !== i.data ? " a " + dataPt(i.data_fim.slice(0, 10)) : ""}`}${i.hora ? " · " + esc(i.hora.slice(0, 5)) : ""}${i.local ? " · " + esc(i.local) : ""}</p>` : ""}
       <p class="desc">${esc(i.descricao || "")}</p>
       ${i.tipo === "evento" ? `<p class="tags">${(i.tags || []).length ? i.tags.map(t => `<span>#${esc(t)}</span>`).join("") : "<i>sem tags</i>"} <button class="ligacao" data-acao="tags">editar tags</button></p>` : ""}
       <p class="links">${[i.link, i.site, i.rede].filter(Boolean).map(l => `<a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`).join("")}</p>

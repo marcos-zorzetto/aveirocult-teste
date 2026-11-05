@@ -165,13 +165,28 @@ function filtrarEventos() {
     (!q || normalizar([e.titulo, e.descricao, e.local, e.concelho, e.categoria, ...(e.tags || [])].filter(Boolean).join(" ")).includes(q)));
 }
 function marcarTag() { $$("#agendaTags button, .agenda .etiq").forEach(b => b.classList.toggle("on", b.dataset.tag === estado.tag)); }
+// "Todas as semanas · seg, qua" ou "De 10 a 14 dez"
+const DIAS_CURTOS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+function quandoCurto(e) {
+  if (e.recorrencia === "semanal" && (e.dias_semana || []).length) {
+    const dias = [1, 2, 3, 4, 5, 6, 0].filter(d => e.dias_semana.includes(d)).map(d => DIAS_CURTOS[d]);
+    const ate = e.repete_ate ? ` até ${new Date(e.repete_ate + "T12:00:00").getDate()} ${MESES[new Date(e.repete_ate + "T12:00:00").getMonth()].toLowerCase()}` : "";
+    return `Todas as semanas · ${dias.join(", ")}${ate}`;
+  }
+  if (e.data_fim && e.data_fim.slice(0, 10) !== e.data) {
+    const a = new Date(e.data + "T12:00:00"), b = new Date(e.data_fim.slice(0, 10) + "T12:00:00");
+    return `De ${a.getDate()}${a.getMonth() !== b.getMonth() ? " " + MESES[a.getMonth()].toLowerCase() : ""} a ${b.getDate()} ${MESES[b.getMonth()].toLowerCase()}`;
+  }
+  return "";
+}
 function mostrarAgenda() {
   const ol = $("#agendaLista"); if (!ol || !EVENTOS.length) return;
   const todos = filtrarEventos(), itens = agendaTudo ? todos : todos.slice(0, 10);
   ol.innerHTML = itens.map((e, i) => {
-    const d = new Date(e.data + "T12:00:00"), onde = [e.local, e.concelho].filter(Boolean).join(" · ");
+    const d = new Date((e.proxima_data || e.data) + "T12:00:00"), onde = [e.local, e.concelho].filter(Boolean).join(" · ");
+    const quando = quandoCurto(e);
     const etiqs = (e.tags || []).length ? `<span class="etiqs">${e.tags.map(t => `<button type="button" class="etiq${t === estado.tag ? " on" : ""}" data-tag="${esc(t)}">#${esc(t)}</button>`).join("")}</span>` : "";
-    const info = `<b>${realcar(e.titulo)}</b><span>${icone("pin")}${esc(onde)}${e.hora ? " · " + esc(e.hora.slice(0, 5)) : ""}</span>${etiqs}`;
+    const info = `<b>${realcar(e.titulo)}</b><span>${icone("pin")}${esc(onde)}${e.hora ? " · " + esc(e.hora.slice(0, 5)) : ""}</span>${quando ? `<span class="repete">${icone("calendario")}${quando}</span>` : ""}${etiqs}`;
     return `<li style="--i:${i % 10}">
       <span class="dia"><b>${String(d.getDate()).padStart(2, "0")}</b><span>${MESES[d.getMonth()]}</span></span>
       <a class="info" href="evento.html?id=${e.id}">${info}</a>
@@ -368,10 +383,10 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
 (async () => {
   const hoje = new Date().toISOString().slice(0, 10);
   const ler = async (vista, q) => { try { const r = await fetch(`${ENVIO.url}/rest/v1/${vista}?${q}`, { headers: cabecalhos }); return r.ok ? await r.json() : []; } catch { return []; } };
-  EVENTOS = await ler("eventos_publicos", `select=*&data=gte.${hoje}&order=data.asc,hora.asc&limit=300`);
+  EVENTOS = await ler("eventos_publicos", `select=*&proxima_data=gte.${hoje}&order=proxima_data.asc,hora.asc&limit=300`);
   if (EVENTOS.length) {
     mostrarTags(); mostrarAgenda();
-    const it = EVENTOS.slice(0, 12).map(e => { const d = new Date(e.data + "T12:00:00"); return `${String(d.getDate()).padStart(2, "0")} ${MESES[d.getMonth()]} · ${e.titulo}${e.concelho ? " · " + e.concelho : ""}`; });
+    const it = EVENTOS.slice(0, 12).map(e => { const d = new Date((e.proxima_data || e.data) + "T12:00:00"); return `${String(d.getDate()).padStart(2, "0")} ${MESES[d.getMonth()]} · ${e.titulo}${e.concelho ? " · " + e.concelho : ""}`; });
     $("#ticker").innerHTML = [...it, ...it].map(t => `<span>${esc(t)}</span>`).join("");
   }
   const noticias = await ler("noticias", "select=id,slug,titulo,resumo,imagem,categoria,concelho,data&publicado=is.true&order=data.desc,id.desc&limit=60");
@@ -439,18 +454,33 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
     return `${ENVIO.url}/storage/v1/object/public/imagens/${nome}`;
   }
 
+  // "Quando acontece?": mostra os campos certos e ajusta o rótulo da data
+  const atualizarQuando = () => {
+    const r = form.querySelector('[name="recorrencia"]:checked')?.value || "nenhuma";
+    form.querySelectorAll("[data-quando]").forEach(el => { el.hidden = el.dataset.quando !== r; });
+    form.querySelector('[name="data_fim"]').required = r === "varios";
+    $("#rotuloData").textContent = r === "semanal" ? "Começa em *" : r === "varios" ? "Primeiro dia *" : "Data *";
+  };
+  form.querySelectorAll('[name="recorrencia"]').forEach(i => i.addEventListener("change", atualizarQuando)); atualizarQuando();
+
+  const v2 = k => (form.querySelector(`[name="${k}"]`)?.value || "").trim();
   const abertoEm = Date.now();
   form.addEventListener("submit", async e => {
     e.preventDefault(); form.classList.add("validar");
     // proteção anti-spam: robôs preenchem o campo escondido ou submetem em menos de 4 segundos
     if (form.querySelector('[name="website"]').value || Date.now() - abertoEm < 4000) { form.hidden = true; ok.hidden = false; return; }
     if (!form.checkValidity()) { erro.textContent = "Falta preencher alguns campos obrigatórios (marcados com *)."; erro.hidden = false; form.querySelector(":invalid")?.focus(); return; }
+    const recorrencia = form.querySelector('[name="recorrencia"]:checked')?.value || "nenhuma";
+    const diasSemana = [...form.querySelectorAll('[name="dias_semana"]:checked')].map(i => Number(i.value));
+    if (tipo === "evento" && recorrencia === "semanal" && !diasSemana.length) { erro.textContent = "Escolhe pelo menos um dia da semana."; erro.hidden = false; form.querySelector(".dias-semana").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+    if (tipo === "evento" && recorrencia === "varios" && v2("data_fim") && v2("data_fim") < v2("data")) { erro.textContent = "O último dia tem de ser depois do primeiro."; erro.hidden = false; return; }
     const btn = form.querySelector('[type="submit"]'); btn.disabled = true; btn.style.opacity = .7;
     try {
       const fd = new FormData(form), v = k => String(fd.get(k) || "").trim() || null;
+      const rec = recorrencia === "semanal" ? { recorrencia: "semanal", dias_semana: diasSemana, repete_ate: v("repete_ate") } : recorrencia === "varios" ? { recorrencia: "nenhuma", data_fim: v("data_fim") } : { recorrencia: "nenhuma" };
       // mesma tabela para os dois tipos: "titulo" é o nome do evento ou o nome artístico; "categoria" é a categoria ou a área
       const dados = tipo === "evento"
-        ? { tipo, titulo: v("titulo"), categoria: v("categoria"), concelho: v("concelho"), local: v("local"), data: v("data"), hora: v("hora"), descricao: v("descricao"), link: v("link"),
+        ? { tipo, titulo: v("titulo"), categoria: v("categoria"), concelho: v("concelho"), local: v("local"), data: v("data"), hora: v("hora"), descricao: v("descricao"), link: v("link"), ...rec,
             tags: (v("tags") || "").split(",").map(t => t.trim().toLowerCase().replace(/^#/, "").slice(0, 24)).filter(Boolean).slice(0, 8) }
         : { tipo, titulo: v("nome_artistico"), categoria: v("area"), concelho: v("concelho_artista"), descricao: v("bio"), site: v("site"), rede: v("rede") };
       dados.responsavel = v("responsavel"); dados.email = v("email");

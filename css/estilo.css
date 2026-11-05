@@ -247,6 +247,7 @@ body:not(.revelado) [data-entrada], body:not(.revelado) .hero-rodape { animation
 .agenda li:nth-child(odd) .dia { background: var(--primaria); }
 .agenda li:nth-child(odd) .dia span { color: #fff; }
 .agenda .info b { display: block; font-family: var(--titulo); font-size: 19px; font-weight: 700; }
+.agenda .info .repete { color: var(--primaria); font-weight: 500; }
 .agenda .info span { display: inline-flex; align-items: center; gap: 6px; color: var(--cinza); font-size: 14px; margin-top: 4px; }
 .agenda .ler { width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid var(--linha); display: grid; place-items: center; transition: background .25s, color .25s, transform .3s var(--suave); }
 .agenda-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 22px; }
@@ -602,3 +603,16 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .contem { background: var(--creme); }
 .contem::after { content: ""; position: absolute; inset: -12%; background: var(--fundo) center / cover no-repeat; filter: blur(22px) saturate(1.15); opacity: .55; z-index: 0; pointer-events: none; }
 .contem > img { object-fit: contain !important; z-index: 1; }
+
+/* ---------- Formulário: quando acontece (um dia, vários dias, todas as semanas) ---------- */
+.quando { border: 0; padding: 0; margin: 0; min-width: 0; }
+.quando legend { padding: 0; margin-bottom: 7px; }
+.quando legend span, .dias-semana > span { font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--cinza); }
+.opcoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.opcoes label { position: relative; cursor: pointer; }
+.opcoes input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.opcoes span { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--linha); background: #fff; font-size: 14px; font-weight: 500; color: var(--tinta-2); transition: .2s; }
+.opcoes input:checked + span { background: var(--tinta); border-color: var(--tinta); color: #fff; }
+.opcoes input:focus-visible + span { outline: 3px solid rgba(0,47,163,.35); outline-offset: 2px; }
+.dias-semana small { font-size: 13px; color: var(--cinza); }
+[data-quando][hidden] { display: none; }

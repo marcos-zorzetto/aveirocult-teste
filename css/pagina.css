@@ -34,3 +34,6 @@
 .rodape .direitos a { color: var(--cinza); }
 @media (max-width: 900px) { .btn-topo { display: none; } }
 @media (max-width: 640px) { .pg-in { width: min(820px, 100% - 32px); } .pg-figura { border-radius: 18px; } .pg-figura.contem { aspect-ratio: 1; } .pg-acoes .btn { width: 100%; justify-content: center; } }
+.pg-meta li { align-items: flex-start; }
+.pg-meta li svg { margin-top: 2px; }
+.pg-meta small { font-size: 14px; color: var(--cinza); }

@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=22">
+  <link rel="stylesheet" href="css/estilo.css?v=23">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://marcos-zorzetto.github.io/aveirocult-teste/icones/icone-512.png"}}</script>
 </head>
 <body>
@@ -344,8 +344,31 @@
           <label class="c c-2"><span>Nome do evento *</span><input name="titulo" type="text" required maxlength="120" placeholder="Ex.: Noite de fado no Mercado"></label>
           <label class="c"><span>Categoria *</span><select name="categoria" required><option value="">Escolhe…</option></select></label>
           <label class="c"><span>Concelho *</span><select name="concelho" required><option value="">Escolhe…</option></select></label>
-          <label class="c"><span>Data *</span><input name="data" type="date" required></label>
+          <fieldset class="c c-2 quando">
+            <legend><span>Quando acontece? *</span></legend>
+            <div class="opcoes" role="radiogroup">
+              <label><input type="radio" name="recorrencia" value="nenhuma" checked><span>Um dia</span></label>
+              <label><input type="radio" name="recorrencia" value="varios"><span>Vários dias seguidos</span></label>
+              <label><input type="radio" name="recorrencia" value="semanal"><span>Todas as semanas</span></label>
+            </div>
+          </fieldset>
+          <label class="c"><span id="rotuloData">Data *</span><input name="data" type="date" required></label>
           <label class="c"><span>Hora</span><input name="hora" type="time"></label>
+          <label class="c" data-quando="varios" hidden><span>Último dia *</span><input name="data_fim" type="date"></label>
+          <div class="c c-2 dias-semana" data-quando="semanal" hidden>
+            <span>Em que dias da semana? *</span>
+            <div class="opcoes">
+              <label><input type="checkbox" name="dias_semana" value="1"><span>Seg</span></label>
+              <label><input type="checkbox" name="dias_semana" value="2"><span>Ter</span></label>
+              <label><input type="checkbox" name="dias_semana" value="3"><span>Qua</span></label>
+              <label><input type="checkbox" name="dias_semana" value="4"><span>Qui</span></label>
+              <label><input type="checkbox" name="dias_semana" value="5"><span>Sex</span></label>
+              <label><input type="checkbox" name="dias_semana" value="6"><span>Sáb</span></label>
+              <label><input type="checkbox" name="dias_semana" value="0"><span>Dom</span></label>
+            </div>
+            <small>O evento fica na agenda todas as semanas, sem precisares de o voltar a publicar.</small>
+          </div>
+          <label class="c" data-quando="semanal" hidden><span>Repete-se até <small>(opcional)</small></span><input name="repete_ate" type="date"></label>
           <label class="c c-2"><span>Local</span><input name="local" type="text" maxlength="120" placeholder="Sala, rua, espaço…"></label>
           <label class="c c-2"><span>Descrição *</span><textarea name="descricao" required minlength="40" maxlength="1200" rows="4" placeholder="O que vai acontecer, para quem é, preço, bilhetes…"></textarea></label>
           <label class="c c-2"><span>Link para bilhetes ou mais informação</span><input name="link" type="url" placeholder="https://"></label>
@@ -498,7 +521,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/dados.js?v=19"></script>
-<script src="js/app.js?v=20"></script>
+<script src="js/app.js?v=21"></script>
 <script src="js/imagens.js?v=2"></script>
 <script src="js/analytics.js?v=1"></script>
 </body>
