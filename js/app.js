@@ -313,6 +313,63 @@ $("#fecharBarra").addEventListener("click", () => {
 
 $("#ano").textContent = new Date().getFullYear();
 
+/* ---------- Divulgar: envio de eventos e artistas ---------- */
+// Quando o backend estiver ligado (Supabase), preencher estes dois valores.
+// Sem backend, os envios ficam guardados neste navegador (localStorage "ac-envios") e a mensagem de sucesso aparece na mesma.
+const ENVIO = { url: "", chave: "", tabela: "submissoes" };
+(() => {
+  const form = $("#formDivulgar"); if (!form) return;
+  const seg = form.querySelector(".segmento"), grupos = [...form.querySelectorAll("[data-grupo]")], erro = $("#formErro"), ok = $("#formOk");
+  let tipo = "evento";
+  const selCat = form.querySelector('select[name="categoria"]');
+  CATEGORIAS.filter(c => c.f).forEach(c => selCat.insertAdjacentHTML("beforeend", `<option>${esc(c.f)}</option>`));
+  ["concelho", "concelho_artista"].forEach(n => { const s = form.querySelector(`select[name="${n}"]`); CONCELHOS.forEach(c => s.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`)); });
+  const hoje = new Date().toISOString().slice(0, 10); form.querySelector('input[name="data"]').min = hoje;
+
+  function mudarTipo(novo) {
+    tipo = novo; seg.dataset.on = novo;
+    [...seg.querySelectorAll("button")].forEach(b => { const on = b.dataset.tipo === novo; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+    grupos.forEach(g => {
+      const ativo = g.dataset.grupo === novo; g.hidden = !ativo;
+      // os campos obrigatórios só contam no grupo visível
+      [...g.querySelectorAll("[name]")].forEach(el => { const ob = el.closest("label")?.querySelector("span")?.textContent.includes("*"); el.required = !!(ativo && ob); el.disabled = !ativo; });
+    });
+    erro.hidden = true; form.classList.remove("validar");
+  }
+  [...seg.querySelectorAll("button")].forEach(b => b.addEventListener("click", () => mudarTipo(b.dataset.tipo)));
+  mudarTipo("evento");
+
+  async function imagemBase64(f) {
+    if (!f || !f.size) return null;
+    if (f.size > 5 * 1024 * 1024) throw new Error("A imagem tem mais de 5 MB. Escolhe uma mais leve.");
+    const img = await createImageBitmap(f); const esc_ = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width * esc_); c.height = Math.round(img.height * esc_);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .82);
+  }
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault(); form.classList.add("validar");
+    if (!form.checkValidity()) { erro.textContent = "Falta preencher alguns campos obrigatórios (marcados com *)."; erro.hidden = false; form.querySelector(":invalid")?.focus(); return; }
+    const btn = form.querySelector('[type="submit"]'); btn.disabled = true; btn.style.opacity = .7;
+    try {
+      const fd = new FormData(form), dados = { tipo, criado_em: new Date().toISOString(), estado: "pendente" };
+      fd.forEach((v, k) => { if (k !== "imagem" && k !== "consent") dados[k] = String(v).trim(); });
+      dados.imagem = await imagemBase64(fd.get("imagem"));
+      if (ENVIO.url && ENVIO.chave) {
+        const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { "Content-Type": "application/json", apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`, Prefer: "return=minimal" }, body: JSON.stringify(dados) });
+        if (!r.ok) throw new Error("Não foi possível enviar agora. Tenta outra vez daqui a pouco.");
+      } else {
+        const fila = JSON.parse(localStorage.getItem("ac-envios") || "[]"); fila.push(dados); localStorage.setItem("ac-envios", JSON.stringify(fila.slice(-20)));
+      }
+      $("#formOkTexto").textContent = tipo === "evento" ? "O teu evento vai ser revisto e, assim que for aprovado, aparece na agenda do site e da app." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
+      form.hidden = true; ok.hidden = false; ok.scrollIntoView({ behavior: "smooth", block: "center" });
+      avisar("Enviado com sucesso");
+    } catch (err) { erro.textContent = err.message || "Algo correu mal. Tenta outra vez."; erro.hidden = false; }
+    btn.disabled = false; btn.style.opacity = "";
+  });
+  $("#formOutro").addEventListener("click", () => { form.reset(); form.classList.remove("validar"); ok.hidden = true; form.hidden = false; mudarTipo("evento"); form.scrollIntoView({ behavior: "smooth", block: "start" }); });
+})();
+
 /* ---------- Abertura: o logótipo surge, o vento leva-o como folha e a página vira ---------- */
 (() => {
   const ab = $("#abertura"), pag = $("#aberturaPagina"), logo = $("#aberturaLogo"), folha = $("#aberturaFolha"), c = $("#aberturaVento");
@@ -324,7 +381,7 @@ $("#ano").textContent = new Date().getFullYear();
   requestAnimationFrame(() => ab.classList.add("pronta"));
 
   // Folhas em canvas (vento cresce com `forca`)
-  const ctx = c.getContext("2d"), CORES = ["#F2B705", "#FC3C3C", "#e07a1f", "#c9a227", "#1d3f9a", "#f0c94a", "#b83a2c"];
+  const ctx = c.getContext("2d"), CORES = ["#ffde04", "#002fa3", "#f5c800", "#2a2a36", "#3f62b9", "#ffe94d", "#00237a"];
   let W = c.width = c.clientWidth, H = c.height = c.clientHeight, forca = 0, t = 0;
   const nova = (f = {}, inicio = false) => Object.assign(f, { x: inicio ? Math.random() * W : -40 - Math.random() * W * .3, y: inicio ? Math.random() * H : H * (.15 + Math.random() * .85), s: 5 + Math.random() * 11, cor: CORES[Math.random() * CORES.length | 0], rot: Math.random() * 6.3, vr: (Math.random() - .5) * .1, fase: Math.random() * 6.3, vel: .5 + Math.random() * .9, alfa: .6 + Math.random() * .4 });
   const folhas = Array.from({ length: innerWidth < 700 ? 30 : 60 }, () => nova({}, true));
