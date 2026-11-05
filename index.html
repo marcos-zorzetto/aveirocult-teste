@@ -1,130 +1,363 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-PT">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Aveiro Cult · Agenda cultural e o que fazer no distrito de Aveiro</title>
-<meta name="description" content="Concertos, teatro, mercados, festas, restaurantes e lugares a descobrir nos 19 concelhos do distrito de Aveiro. Agenda atualizada e notícias da cultura local.">
-<meta property="og:title" content="Aveiro Cult · Tudo o que acontece no distrito de Aveiro">
-<meta property="og:description" content="Agenda cultural, notícias e lugares a descobrir nos 19 concelhos do distrito de Aveiro.">
-<meta property="og:image" content="https://aveirocult.com/wp-content/uploads/2020/09/tax_aveiro.jpg">
-<meta property="og:type" content="website">
-<meta name="theme-color" content="#14141a">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icones/icone-192.png">
-<link rel="apple-touch-icon" href="icones/icone-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Aveiro Cult">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilo.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Aveiro Cult · Agenda cultural, eventos e notícias do distrito de Aveiro</title>
+  <meta name="description" content="Descobre o que fazer no distrito de Aveiro: concertos, teatro, circo, gastronomia, mercados e eventos nos 19 concelhos. Notícias diárias, podcast e app instalável.">
+  <meta name="theme-color" content="#0f0f14">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_PT">
+  <meta property="og:title" content="Aveiro Cult · O que fazer no distrito de Aveiro">
+  <meta property="og:description" content="Agenda cultural, eventos e notícias dos 19 concelhos do distrito de Aveiro. Site e app num só lugar.">
+  <meta property="og:image" content="https://aveirocult.com/wp-content/uploads/2020/09/tax_aveiro.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icones/icone-192.png">
+  <link rel="apple-touch-icon" href="icones/icone-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Aveiro Cult">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
 
-<!-- Aviso de instalação (só no telemóvel, se ainda não instalada) -->
-<div class="barra-app" id="barraApp" hidden>
-  <img src="icones/icone-192.png" alt="">
-  <div><b>App Aveiro Cult</b><span>Grátis, sem lojas, com 1 toque</span></div>
-  <button class="btn" data-instalar>Instalar</button>
-  <button class="fechar" id="fecharBarra" aria-label="Fechar">×</button>
+<!-- Ícones reutilizáveis -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-lupa" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-seta" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-musica" viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></symbol>
+  <symbol id="i-teatro" viewBox="0 0 24 24"><path d="M4 5c0 8 2 13 8 13s8-5 8-13c-3 1-5 1-8 1S7 6 4 5Z"/><path d="M9 10.5c.5-.7 1.5-.7 2 0M13 10.5c.5-.7 1.5-.7 2 0M9 14c1.5 1.5 4.5 1.5 6 0"/></symbol>
+  <symbol id="i-garfo" viewBox="0 0 24 24"><path d="M7 2v8a3 3 0 0 0 6 0V2M10 12v10M17 2c-2 1-3 4-3 7v3h3v10"/></symbol>
+  <symbol id="i-familia" viewBox="0 0 24 24"><circle cx="8" cy="6" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M2 21v-3a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v3M14 21v-2a4 4 0 0 1 4-4h1a3 3 0 0 1 3 3v3"/></symbol>
+  <symbol id="i-desporto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c3 3 3 15 0 18M3 12h18M5 7c4 2 10 2 14 0M5 17c4-2 10-2 14 0"/></symbol>
+  <symbol id="i-tech" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/><rect x="9" y="9" width="6" height="6" rx="1"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></symbol>
+  <symbol id="i-partilhar" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></symbol>
+  <symbol id="i-casa" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></symbol>
+  <symbol id="i-jornal" viewBox="0 0 24 24"><path d="M4 5h13a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M19 9h2v10a2 2 0 0 1-2 2M8 9h5M8 13h5M8 17h5"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4Z"/><path d="M8 9h8M8 12h5"/></symbol>
+  <symbol id="i-insta" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-raio" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7Z"/></symbol>
+  <symbol id="i-sino" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4Z"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></symbol>
+</svg>
+
+<!-- Abertura -->
+<div class="abertura" id="abertura" aria-hidden="true">
+  <div class="abertura-marca"><span class="a">Aveiro</span><span class="c">Cult</span></div>
+  <div class="abertura-linha"><i></i></div>
 </div>
 
-<header class="topo">
+<div class="progresso" id="progresso"></div>
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+
+<!-- Barra de instalação (telemóvel) -->
+<div class="barra-app" id="barraApp" hidden>
+  <img src="icones/icone-192.png" alt="" width="40" height="40">
+  <div><b>Aveiro Cult</b><span>Instala a app · grátis e sem lojas</span></div>
+  <button class="btn btn-mini" data-instalar>Instalar</button>
+  <button class="fechar" id="fecharBarra" aria-label="Fechar"><svg><use href="#i-fechar"/></svg></button>
+</div>
+
+<header class="topo" id="topo">
   <div class="caixa topo-in">
-    <a href="#" class="logo"><img src="https://aveirocult.com/wp-content/uploads/2020/09/Logo-novo-AveiroCult-2100-x-2100-px_20260314_013201_0000.png" alt="Aveiro Cult"></a>
-    <nav class="menu">
-      <a href="#agenda">Agenda</a><a href="#noticias">Notícias</a><a href="#explorar">Explorar o distrito</a><a href="#comunidade">Comunidade</a><a href="#sobre">Sobre</a>
+    <a class="logo" href="#inicio" aria-label="Aveiro Cult, início">
+      <span class="logo-marca"><span class="a">Aveiro</span><span class="c">Cult</span></span>
+    </a>
+    <nav class="menu" aria-label="Principal">
+      <a href="#inicio" data-nav>Início</a>
+      <a href="#destaques" data-nav>Destaques</a>
+      <a href="#agenda" data-nav>Agenda</a>
+      <a href="#noticias" data-nav>Notícias</a>
+      <a href="#explorar" data-nav>Concelhos</a>
+      <a href="#comunidade" data-nav>Comunidade</a>
     </nav>
-    <button class="btn" data-instalar>Instalar a app</button>
+    <div class="topo-acoes">
+      <button class="btn btn-contorno" data-instalar data-magnetico><svg><use href="#i-download"/></svg>Instalar app</button>
+      <button class="hamburguer" id="abrirMenu" aria-label="Abrir menu" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
+    </div>
   </div>
 </header>
 
-<main>
-  <section class="hero">
-    <div class="caixa hero-in">
-      <p class="sobre-titulo">Cultura no distrito de Aveiro</p>
-      <h1>Tudo o que acontece no distrito de Aveiro, num só lugar</h1>
-      <p class="sub">Concertos, teatro, mercados, festas e lugares a descobrir nos 19 concelhos.</p>
-      <form class="busca" id="busca">
-        <input type="search" id="termo" placeholder="O que procura? Ex.: jazz, teatro, Ovar" aria-label="Procurar">
-        <button class="btn escuro">Procurar</button>
-      </form>
-      <div class="chips" id="chips">
-        <button data-f="">Tudo</button><button data-f="música">Música</button><button data-f="teatro">Teatro</button><button data-f="festival">Festivais</button><button data-f="mercado">Mercados</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="caixa bloco" id="agenda">
-    <div class="titulo-sec"><h2>Em destaque</h2><a href="https://aveirocult.com/blog/" class="ver">Ver todas ›</a></div>
-    <div class="cards" id="destaques"></div>
-  </section>
-
-  <section class="caixa bloco" id="noticias">
-    <div class="titulo-sec"><h2>Novidades</h2></div>
-    <ul class="lista" id="lista"></ul>
-    <p class="vazio" id="vazio" hidden>Nada encontrado. Experimente outra palavra.</p>
-  </section>
-
-  <section class="app-sec" id="app">
-    <div class="caixa app-in">
-      <div>
-        <p class="sobre-titulo">A app Aveiro Cult</p>
-        <h2>Leve a agenda do distrito no bolso</h2>
-        <p>Instale direto daqui, sem passar pelas lojas. É o mesmo Aveiro Cult: abre num toque, funciona com pouca rede e avisa do que vai acontecer.</p>
-        <div class="bts">
-          <button class="btn" data-instalar>Instalar no Android</button>
-          <button class="btn contorno" data-iphone>Instalar no iPhone</button>
-        </div>
-      </div>
-      <div class="telemovel"><img src="icones/icone-512.png" alt="Ícone da app Aveiro Cult"></div>
-    </div>
-  </section>
-
-  <section class="caixa bloco" id="explorar">
-    <div class="titulo-sec"><h2>Explorar o distrito</h2></div>
-    <div class="categorias">
-      <a>Eventos</a><a>Restaurantes</a><a>Bares</a><a>Turismo</a><a>Cultura</a><a>Compras</a><a>Fitness</a>
-    </div>
-    <h3>Os 19 concelhos</h3>
-    <div class="concelhos" id="concelhos"></div>
-  </section>
-
-  <section class="caixa bloco comunidade" id="comunidade">
-    <div><b>Newsletter semanal</b><span>A agenda do fim de semana no seu email.</span><a class="ver">Subscrever ›</a></div>
-    <div><b>Podcast e videocast</b><span>Conversas com quem faz a cultura acontecer.</span><a class="ver">Ouvir episódios ›</a></div>
-    <div><b>Comunidade no WhatsApp</b><span>Grupos por interesse para não perder nada.</span><a class="ver">Entrar ›</a></div>
-  </section>
-
-  <section class="caixa bloco promo">
-    <div><h2>Promova a sua empresa ou evento</h2><p>Chegue a quem procura o que fazer no distrito de Aveiro.</p></div>
-    <a class="btn" href="https://aveirocult.com/contacto/">Contacte-nos</a>
-  </section>
-</main>
-
-<footer class="rodape" id="sobre">
-  <div class="caixa rodape-in">
-    <div><b>Aveiro Cult</b><p>Iniciativa cultural independente, desde 2019, que liga pessoas, artistas e espaços do distrito de Aveiro.</p></div>
-    <div><b>Institucional</b><a href="https://aveirocult.com/sobre/">Quem somos</a><a href="https://aveirocult.com/contacto/">Contacto</a><a href="https://aveirocult.com/politica-de-privacidade/">Privacidade</a></div>
-    <div><b>Siga-nos</b><a href="https://linktr.ee/Aveirocult">Instagram, Facebook e mais</a></div>
-  </div>
-  <p class="caixa direitos">© Aveiro Cult · Versão de teste para aprovação</p>
-</footer>
-
-<!-- Barra de navegação de app (telemóvel) -->
-<nav class="nav-app">
-  <a href="#" class="on"><span>⌂</span>Início</a><a href="#agenda"><span>◷</span>Agenda</a><a href="#explorar"><span>⌖</span>Explorar</a><a href="#noticias"><span>☰</span>Notícias</a><a href="#comunidade"><span>♡</span>Comunidade</a>
-</nav>
-
-<!-- Instruções iPhone -->
-<div class="folha" id="folhaIphone" hidden>
-  <div class="folha-in">
-    <h3>Instalar no iPhone</h3>
-    <p>Fica com ícone no ecrã, como qualquer app.</p>
-    <ol><li><span>1</span>No Safari, toque em Partilhar (quadrado com seta)</li><li><span>2</span>Escolha «Adicionar ao ecrã principal»</li><li><span>3</span>Toque em «Adicionar». Pronto!</li></ol>
-    <button class="btn largo" id="fecharFolha">Entendi</button>
+<!-- Menu móvel -->
+<div class="menu-movel" id="menuMovel" aria-hidden="true">
+  <button class="fechar" id="fecharMenu" aria-label="Fechar menu"><svg><use href="#i-fechar"/></svg></button>
+  <nav>
+    <a href="#inicio" style="--i:0">Início</a>
+    <a href="#destaques" style="--i:1">Destaques</a>
+    <a href="#agenda" style="--i:2">Agenda</a>
+    <a href="#noticias" style="--i:3">Notícias</a>
+    <a href="#explorar" style="--i:4">Concelhos</a>
+    <a href="#comunidade" style="--i:5">Comunidade</a>
+  </nav>
+  <div class="menu-movel-pe" style="--i:6">
+    <button class="btn btn-primario btn-largo" data-instalar><svg><use href="#i-download"/></svg>Instalar a app</button>
+    <p>Agenda cultural dos 19 concelhos do distrito de Aveiro.</p>
   </div>
 </div>
+
+<main>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-fundo" id="heroFundo"></div>
+  <div class="hero-veu"></div>
+  <div class="caixa hero-in">
+    <div class="hero-conteudo" id="heroConteudo">
+      <p class="script" data-entrada style="--i:0">Explore</p>
+      <h1 data-entrada style="--i:1">
+        <span class="roda" id="rodaPalavra" aria-live="polite"><span>Aveiro</span></span>
+      </h1>
+      <p class="hero-sub" data-entrada style="--i:2">Concertos, teatro, mercados, gastronomia e tudo o que acontece nos 19 concelhos do distrito. Num só lugar, no site e na app.</p>
+
+      <form class="pesquisa" id="pesquisa" role="search" data-entrada style="--i:3">
+        <label class="campo campo-texto">
+          <svg><use href="#i-lupa"/></svg>
+          <input type="search" id="termo" placeholder="Procurar eventos, artistas, lugares…" autocomplete="off" aria-label="O que procuras?">
+        </label>
+        <label class="campo campo-select">
+          <svg><use href="#i-pin"/></svg>
+          <select id="filtroConcelho" aria-label="Concelho">
+            <option value="">Todo o distrito</option>
+          </select>
+        </label>
+        <button class="btn btn-primario" type="submit" data-magnetico><span>Procurar</span><svg><use href="#i-seta"/></svg></button>
+      </form>
+
+      <div class="chips" id="chips" data-entrada style="--i:4">
+        <button type="button" class="on" data-f="">Tudo</button>
+        <button type="button" data-f="Música">Música</button>
+        <button type="button" data-f="Teatro & Circo">Teatro &amp; Circo</button>
+        <button type="button" data-f="Gastronomia">Gastronomia</button>
+        <button type="button" data-f="Família">Família</button>
+        <button type="button" data-f="Tecnologia">Tecnologia</button>
+      </div>
+    </div>
+
+    <div class="hero-rodape">
+      <div class="hero-pontos" id="heroPontos" aria-hidden="true"></div>
+      <a class="rolar" href="#destaques" aria-label="Ver conteúdo"><span></span></a>
+      <div class="hero-nums">
+        <div><b data-contar="19">0</b><span>concelhos</span></div>
+        <div><b data-contar="7">0</b><span>categorias</span></div>
+        <div><b>24/7</b><span>na tua app</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ticker -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-faixa" id="ticker"></div>
+</div>
+
+<!-- Categorias -->
+<section class="bloco categorias-sec" aria-label="Categorias">
+  <div class="caixa">
+    <div class="categorias" id="categorias"></div>
+  </div>
+</section>
+
+<!-- Destaques -->
+<section class="bloco" id="destaques">
+  <div class="caixa">
+    <div class="titulo-sec" data-reveal>
+      <div>
+        <p class="sobre-titulo">Esta semana</p>
+        <h2>Em <em>destaque</em></h2>
+      </div>
+      <div class="setas">
+        <button class="seta" id="destAnt" aria-label="Anterior"><svg style="transform:scaleX(-1)"><use href="#i-seta"/></svg></button>
+        <button class="seta" id="destSeg" aria-label="Seguinte"><svg><use href="#i-seta"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="faixa-wrap">
+    <div class="faixa" id="faixaDestaques"></div>
+  </div>
+  <div class="caixa"><div class="pontos" id="destPontos"></div></div>
+</section>
+
+<!-- Agenda -->
+<section class="bloco agenda-sec" id="agenda">
+  <div class="caixa">
+    <div class="titulo-sec" data-reveal>
+      <div>
+        <p class="sobre-titulo">Marca na agenda</p>
+        <h2>Próximos <em>eventos</em></h2>
+      </div>
+      <a class="ver" href="#noticias">Ver todas as notícias <svg><use href="#i-seta"/></svg></a>
+    </div>
+    <ol class="agenda" id="agendaLista"></ol>
+  </div>
+</section>
+
+<!-- Notícias -->
+<section class="bloco" id="noticias">
+  <div class="caixa">
+    <div class="titulo-sec" data-reveal>
+      <div>
+        <p class="sobre-titulo">Atualizado todos os dias</p>
+        <h2>Últimas <em>notícias</em></h2>
+      </div>
+      <p class="resultado" id="resultado"></p>
+    </div>
+    <div class="grelha" id="lista"></div>
+    <p class="vazio" id="vazio" hidden>Não encontrámos nada com essa pesquisa. Experimenta outra palavra ou escolhe “Tudo”.</p>
+  </div>
+</section>
+
+<!-- App -->
+<section class="app-sec" id="app">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="caixa app-in">
+    <div class="app-texto" data-reveal>
+      <p class="sobre-titulo">Site e app, uma coisa só</p>
+      <h2>Leva o Aveiro Cult <em>no bolso</em></h2>
+      <p>A app instala-se diretamente a partir desta página. Sem lojas, sem downloads pesados, sempre atualizada com o que está no site.</p>
+      <ul class="vantagens">
+        <li style="--i:0"><svg><use href="#i-raio"/></svg><div><b>Abre em segundos</b><span>Ícone no ecrã inicial, como qualquer outra app.</span></div></li>
+        <li style="--i:1"><svg><use href="#i-wifi"/></svg><div><b>Funciona com pouca rede</b><span>Guarda o que já viste para abrir mesmo sem ligação.</span></div></li>
+        <li style="--i:2"><svg><use href="#i-sino"/></svg><div><b>Sempre atualizada</b><span>Cada notícia publicada no site aparece logo na app.</span></div></li>
+      </ul>
+      <div class="bts">
+        <button class="btn btn-primario" data-instalar data-magnetico><svg><use href="#i-download"/></svg>Instalar no Android</button>
+        <button class="btn btn-contorno" data-iphone data-magnetico><svg><use href="#i-partilhar"/></svg>Instalar no iPhone</button>
+      </div>
+    </div>
+
+    <div class="telemovel-wrap" data-reveal>
+      <div class="telemovel" id="telemovel">
+        <div class="tm-ecra">
+          <div class="tm-topo"><span class="tm-hora">9:41</span><span class="tm-sinal"></span></div>
+          <div class="tm-header"><span class="logo-marca"><span class="a">Aveiro</span><span class="c">Cult</span></span></div>
+          <div class="tm-hero" id="tmHero"><p>Explore</p><b>Aveiro</b></div>
+          <div class="tm-cards" id="tmCards"></div>
+          <div class="tm-nav"><i class="on"></i><i></i><i></i><i></i></div>
+          <div class="tm-notif" id="tmNotif"><img src="icones/icone-192.png" alt=""><div><b>Aveiro Cult</b><span>Nova notícia publicada</span></div></div>
+        </div>
+      </div>
+      <div class="flutuante f1"><svg><use href="#i-musica"/></svg>Concertos</div>
+      <div class="flutuante f2"><svg><use href="#i-teatro"/></svg>Teatro</div>
+      <div class="flutuante f3"><svg><use href="#i-garfo"/></svg>Gastronomia</div>
+    </div>
+  </div>
+</section>
+
+<!-- Concelhos -->
+<section class="bloco" id="explorar">
+  <div class="caixa">
+    <div class="titulo-sec" data-reveal>
+      <div>
+        <p class="sobre-titulo">De Arouca a Vagos</p>
+        <h2>Os 19 concelhos <em>do distrito</em></h2>
+      </div>
+      <p class="nota">Toca num concelho para ver o que acontece lá.</p>
+    </div>
+    <div class="concelhos" id="concelhos"></div>
+  </div>
+</section>
+
+<!-- Comunidade -->
+<section class="bloco" id="comunidade">
+  <div class="caixa">
+    <div class="titulo-sec" data-reveal>
+      <div>
+        <p class="sobre-titulo">Mais do que um site</p>
+        <h2>Faz parte da <em>comunidade</em></h2>
+      </div>
+    </div>
+    <div class="comunidade">
+      <a class="cartao-com" href="https://aveirocult.com" target="_blank" rel="noopener" data-reveal style="--i:0">
+        <span class="icone"><svg><use href="#i-mic"/></svg></span>
+        <b>Podcast &amp; videocast</b>
+        <span>Conversas com quem faz a cultura acontecer no distrito.</span>
+        <em>Ouvir <svg><use href="#i-seta"/></svg></em>
+      </a>
+      <a class="cartao-com" href="https://aveirocult.com" target="_blank" rel="noopener" data-reveal style="--i:1">
+        <span class="icone verde"><svg><use href="#i-chat"/></svg></span>
+        <b>Comunidade WhatsApp</b>
+        <span>Recebe os eventos da semana diretamente no telemóvel.</span>
+        <em>Entrar <svg><use href="#i-seta"/></svg></em>
+      </a>
+      <a class="cartao-com" href="https://aveirocult.com" target="_blank" rel="noopener" data-reveal style="--i:2">
+        <span class="icone rosa"><svg><use href="#i-insta"/></svg></span>
+        <b>Redes sociais</b>
+        <span>Fotos, vídeos e bastidores dos melhores momentos.</span>
+        <em>Seguir <svg><use href="#i-seta"/></svg></em>
+      </a>
+    </div>
+
+    <div class="promo" data-reveal>
+      <div>
+        <h3>Tens um evento, um espaço ou um projeto?</h3>
+        <p>Divulga-o no Aveiro Cult e chega a quem vive e visita o distrito.</p>
+      </div>
+      <a class="btn btn-escuro" href="https://aveirocult.com/contacto/" target="_blank" rel="noopener" data-magnetico>Falar connosco <svg><use href="#i-seta"/></svg></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="rodape">
+  <div class="caixa rodape-in">
+    <div>
+      <span class="logo-marca grande"><span class="a">Aveiro</span><span class="c">Cult</span></span>
+      <p>Agenda cultural, eventos e notícias do distrito de Aveiro. Site e app num só lugar.</p>
+    </div>
+    <div>
+      <b>Explorar</b>
+      <a href="#destaques">Destaques</a><a href="#agenda">Agenda</a><a href="#noticias">Notícias</a><a href="#explorar">Concelhos</a>
+    </div>
+    <div>
+      <b>Aveiro Cult</b>
+      <a href="#comunidade">Comunidade</a><a href="#app">Instalar a app</a><a href="https://aveirocult.com" target="_blank" rel="noopener">Site atual</a>
+    </div>
+  </div>
+  <div class="caixa direitos">
+    <span>© <span id="ano"></span> Aveiro Cult. Todos os direitos reservados.</span>
+    <span>Versão de demonstração</span>
+  </div>
+</footer>
+
+<!-- Navegação tipo app (telemóvel) -->
+<nav class="nav-app" aria-label="Navegação rápida">
+  <a href="#inicio" class="on" data-nav><svg><use href="#i-casa"/></svg><span>Início</span></a>
+  <a href="#agenda" data-nav><svg><use href="#i-calendario"/></svg><span>Agenda</span></a>
+  <a href="#noticias" data-nav><svg><use href="#i-jornal"/></svg><span>Notícias</span></a>
+  <a href="#explorar" data-nav><svg><use href="#i-pin"/></svg><span>Concelhos</span></a>
+  <button type="button" data-instalar><svg><use href="#i-download"/></svg><span>Instalar</span></button>
+</nav>
+
+<!-- Folha de instruções para iPhone -->
+<div class="folha" id="folhaIphone" hidden role="dialog" aria-modal="true" aria-labelledby="folhaTitulo">
+  <div class="folha-in">
+    <span class="folha-puxa"></span>
+    <img class="folha-icone" src="icones/icone-192.png" alt="">
+    <h3 id="folhaTitulo">Instalar no iPhone ou iPad</h3>
+    <p>Demora 10 segundos e não precisa da App Store.</p>
+    <ol>
+      <li><span>1</span><div>Abre esta página no <b>Safari</b>.</div></li>
+      <li><span>2</span><div>Toca no botão <b>Partilhar</b> <svg class="inline"><use href="#i-partilhar"/></svg> na barra inferior.</div></li>
+      <li><span>3</span><div>Escolhe <b>Adicionar ao ecrã principal</b> <svg class="inline"><use href="#i-mais"/></svg> e confirma.</div></li>
+    </ol>
+    <button class="btn btn-primario btn-largo" id="fecharFolha">Entendi</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/dados.js"></script>
 <script src="js/app.js"></script>
