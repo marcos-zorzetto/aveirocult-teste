@@ -272,7 +272,7 @@ $$("#faixaDestaques [data-tilt]").forEach(el => typeof ligarTilt === "function" 
 }
 desenharDestaques();
 const pontos = $("#destPontos");
-const passoFaixa = () => (faixa.firstElementChild?.offsetWidth || 300) + 20;
+const passoFaixa = () => (faixa.firstElementChild?.offsetWidth || 300) + (parseFloat(getComputedStyle(faixa).columnGap) || 20);
 function atualizarPontos() {
   const i = Math.round(faixa.scrollLeft / passoFaixa());
   $$("#destPontos i").forEach((p, j) => p.classList.toggle("on", j === i));

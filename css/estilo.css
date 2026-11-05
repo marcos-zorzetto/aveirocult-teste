@@ -3,6 +3,7 @@
    Identidade: azul #002fa3 + amarelo #ffde04 (logótipo), preto, branco e grafite
    ============================================================ */
 :root {
+  --largura: 1520px; --gutter: clamp(48px, 10vw, 200px);
   --primaria: #002fa3;
   --primaria-escura: #00237a;
   --azul: #002fa3;
@@ -35,7 +36,7 @@ svg { width: 1.2em; height: 1.2em; fill: none; stroke: currentColor; stroke-widt
 svg.inline { display: inline-block; vertical-align: -3px; width: 1.1em; height: 1.1em; }
 ::selection { background: var(--primaria); color: #fff; }
 
-.caixa { width: min(1240px, 100% - 40px); margin-inline: auto; }
+.caixa { width: min(var(--largura), 100% - var(--gutter)); margin-inline: auto; }
 .bloco { padding-block: clamp(64px, 9vw, 110px); }
 
 h1, h2, h3 { font-family: var(--titulo); letter-spacing: -.02em; line-height: 1.1; }
@@ -142,7 +143,7 @@ body.com-barra .topo { top: 60px; }
 .hero-fundo img.ativo { opacity: 1; animation: kenburns 9s ease-out forwards; }
 @keyframes kenburns { from { transform: scale(1) translate(0, 0); } to { transform: scale(1.14) translate(-1.5%, 1%); } }
 .hero-veu { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,16,.55) 0%, rgba(10,10,16,.15) 35%, rgba(10,10,16,.55) 70%, rgba(10,10,16,.95) 100%), linear-gradient(90deg, rgba(10,10,16,.6), transparent 60%); }
-.hero-in { position: relative; z-index: 1; width: min(1240px, 100% - 40px); padding-top: calc(var(--topo-h) + 40px); padding-bottom: 36px; display: flex; flex-direction: column; gap: clamp(40px, 7vh, 80px); }
+.hero-in { position: relative; z-index: 1; width: min(var(--largura), 100% - var(--gutter)); padding-top: calc(var(--topo-h) + 40px); padding-bottom: 36px; display: flex; flex-direction: column; gap: clamp(40px, 7vh, 80px); }
 .hero-conteudo { max-width: 760px; }
 [data-entrada] { opacity: 0; transform: translateY(28px); animation: entrada 1s var(--suave) forwards; animation-delay: calc(.4s + var(--i) * .12s); }
 /* As entradas do hero só arrancam quando a abertura revela o site */
@@ -216,10 +217,10 @@ body:not(.revelado) [data-entrada], body:not(.revelado) .hero-rodape { animation
 .seta:hover { background: var(--tinta); color: #fff; border-color: var(--tinta); transform: scale(1.06); }
 .seta:disabled { opacity: .3; pointer-events: none; }
 .faixa-wrap { overflow: hidden; }
-.faixa { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-inline: max(20px, (100% - 1240px) / 2); scroll-padding-inline: max(20px, (100% - 1240px) / 2); padding-bottom: 8px; cursor: grab; }
+.faixa { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-inline: max(var(--gutter) / 2, (100% - var(--largura)) / 2); scroll-padding-inline: max(var(--gutter) / 2, (100% - var(--largura)) / 2); padding-bottom: 8px; cursor: grab; }
 .faixa::-webkit-scrollbar { display: none; }
 .faixa.arrastar { cursor: grabbing; scroll-snap-type: none; }
-.destaque { flex: 0 0 min(400px, 78vw); scroll-snap-align: start; position: relative; aspect-ratio: 4 / 5; border-radius: 24px; overflow: hidden; background: var(--tinta-2); color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; isolation: isolate; transform-style: preserve-3d; transition: transform .5s var(--suave), box-shadow .5s; }
+.destaque { flex: 0 0 calc((100% - 3 * 20px) / 4); scroll-snap-align: start; position: relative; aspect-ratio: 4 / 5; border-radius: 24px; overflow: hidden; background: var(--tinta-2); color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; isolation: isolate; transform-style: preserve-3d; transition: transform .5s var(--suave), box-shadow .5s; }
 .destaque img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 1s var(--suave); }
 .destaque::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,10,16,.05) 30%, rgba(10,10,16,.85) 100%); }
 .destaque:hover { box-shadow: var(--sombra-forte); }
@@ -410,11 +411,13 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 
 /* ---------- Responsivo ---------- */
 @media (max-width: 1100px) {
+  .destaque { flex-basis: calc((100% - 2 * 20px) / 3); }
   .comunidade { grid-template-columns: 1fr 1fr; }
   .categorias { grid-template-columns: repeat(4, 1fr); }
   .grelha { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 900px) {
+  .destaque { flex-basis: calc((100% - 20px) / 2); }
   :root { --topo-h: 64px; }
   .menu, .topo .btn-contorno { display: none; }
   .hamburguer { display: grid; }
@@ -446,9 +449,9 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .nav-app button span { color: var(--primaria); }
 }
 @media (max-width: 640px) {
-  .caixa, .hero-in { width: min(1240px, 100% - 32px); }
+  .caixa, .hero-in { width: min(var(--largura), 100% - 32px); }
   .faixa { padding-inline: 16px; gap: 14px; scroll-padding-inline: 16px; }
-  .destaque { flex-basis: calc(100vw - 64px); padding: 18px; border-radius: 20px; }
+  .destaque { flex-basis: calc(100% - 32px); padding: 18px; border-radius: 20px; }
   .destaque h3 { font-size: 19px; }
   .categorias { mask-image: linear-gradient(90deg, #000 88%, transparent); -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); }
   .telemovel-wrap { padding: 10px 0 0; }
