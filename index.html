@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aveiro Cult · Agenda cultural e o que fazer no distrito de Aveiro</title>
+<meta name="description" content="Concertos, teatro, mercados, festas, restaurantes e lugares a descobrir nos 19 concelhos do distrito de Aveiro. Agenda atualizada e notícias da cultura local.">
+<meta property="og:title" content="Aveiro Cult · Tudo o que acontece no distrito de Aveiro">
+<meta property="og:description" content="Agenda cultural, notícias e lugares a descobrir nos 19 concelhos do distrito de Aveiro.">
+<meta property="og:image" content="https://aveirocult.com/wp-content/uploads/2020/09/tax_aveiro.jpg">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#14141a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/icone-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Aveiro Cult">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+<!-- Aviso de instalação (só no telemóvel, se ainda não instalada) -->
+<div class="barra-app" id="barraApp" hidden>
+  <img src="icones/icone-192.png" alt="">
+  <div><b>App Aveiro Cult</b><span>Grátis, sem lojas, com 1 toque</span></div>
+  <button class="btn" data-instalar>Instalar</button>
+  <button class="fechar" id="fecharBarra" aria-label="Fechar">×</button>
+</div>
+
+<header class="topo">
+  <div class="caixa topo-in">
+    <a href="#" class="logo"><img src="https://aveirocult.com/wp-content/uploads/2020/09/Logo-novo-AveiroCult-2100-x-2100-px_20260314_013201_0000.png" alt="Aveiro Cult"></a>
+    <nav class="menu">
+      <a href="#agenda">Agenda</a><a href="#noticias">Notícias</a><a href="#explorar">Explorar o distrito</a><a href="#comunidade">Comunidade</a><a href="#sobre">Sobre</a>
+    </nav>
+    <button class="btn" data-instalar>Instalar a app</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="caixa hero-in">
+      <p class="sobre-titulo">Cultura no distrito de Aveiro</p>
+      <h1>Tudo o que acontece no distrito de Aveiro, num só lugar</h1>
+      <p class="sub">Concertos, teatro, mercados, festas e lugares a descobrir nos 19 concelhos.</p>
+      <form class="busca" id="busca">
+        <input type="search" id="termo" placeholder="O que procura? Ex.: jazz, teatro, Ovar" aria-label="Procurar">
+        <button class="btn escuro">Procurar</button>
+      </form>
+      <div class="chips" id="chips">
+        <button data-f="">Tudo</button><button data-f="música">Música</button><button data-f="teatro">Teatro</button><button data-f="festival">Festivais</button><button data-f="mercado">Mercados</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="caixa bloco" id="agenda">
+    <div class="titulo-sec"><h2>Em destaque</h2><a href="https://aveirocult.com/blog/" class="ver">Ver todas ›</a></div>
+    <div class="cards" id="destaques"></div>
+  </section>
+
+  <section class="caixa bloco" id="noticias">
+    <div class="titulo-sec"><h2>Novidades</h2></div>
+    <ul class="lista" id="lista"></ul>
+    <p class="vazio" id="vazio" hidden>Nada encontrado. Experimente outra palavra.</p>
+  </section>
+
+  <section class="app-sec" id="app">
+    <div class="caixa app-in">
+      <div>
+        <p class="sobre-titulo">A app Aveiro Cult</p>
+        <h2>Leve a agenda do distrito no bolso</h2>
+        <p>Instale direto daqui, sem passar pelas lojas. É o mesmo Aveiro Cult: abre num toque, funciona com pouca rede e avisa do que vai acontecer.</p>
+        <div class="bts">
+          <button class="btn" data-instalar>Instalar no Android</button>
+          <button class="btn contorno" data-iphone>Instalar no iPhone</button>
+        </div>
+      </div>
+      <div class="telemovel"><img src="icones/icone-512.png" alt="Ícone da app Aveiro Cult"></div>
+    </div>
+  </section>
+
+  <section class="caixa bloco" id="explorar">
+    <div class="titulo-sec"><h2>Explorar o distrito</h2></div>
+    <div class="categorias">
+      <a>Eventos</a><a>Restaurantes</a><a>Bares</a><a>Turismo</a><a>Cultura</a><a>Compras</a><a>Fitness</a>
+    </div>
+    <h3>Os 19 concelhos</h3>
+    <div class="concelhos" id="concelhos"></div>
+  </section>
+
+  <section class="caixa bloco comunidade" id="comunidade">
+    <div><b>Newsletter semanal</b><span>A agenda do fim de semana no seu email.</span><a class="ver">Subscrever ›</a></div>
+    <div><b>Podcast e videocast</b><span>Conversas com quem faz a cultura acontecer.</span><a class="ver">Ouvir episódios ›</a></div>
+    <div><b>Comunidade no WhatsApp</b><span>Grupos por interesse para não perder nada.</span><a class="ver">Entrar ›</a></div>
+  </section>
+
+  <section class="caixa bloco promo">
+    <div><h2>Promova a sua empresa ou evento</h2><p>Chegue a quem procura o que fazer no distrito de Aveiro.</p></div>
+    <a class="btn" href="https://aveirocult.com/contacto/">Contacte-nos</a>
+  </section>
+</main>
+
+<footer class="rodape" id="sobre">
+  <div class="caixa rodape-in">
+    <div><b>Aveiro Cult</b><p>Iniciativa cultural independente, desde 2019, que liga pessoas, artistas e espaços do distrito de Aveiro.</p></div>
+    <div><b>Institucional</b><a href="https://aveirocult.com/sobre/">Quem somos</a><a href="https://aveirocult.com/contacto/">Contacto</a><a href="https://aveirocult.com/politica-de-privacidade/">Privacidade</a></div>
+    <div><b>Siga-nos</b><a href="https://linktr.ee/Aveirocult">Instagram, Facebook e mais</a></div>
+  </div>
+  <p class="caixa direitos">© Aveiro Cult · Versão de teste para aprovação</p>
+</footer>
+
+<!-- Barra de navegação de app (telemóvel) -->
+<nav class="nav-app">
+  <a href="#" class="on"><span>⌂</span>Início</a><a href="#agenda"><span>◷</span>Agenda</a><a href="#explorar"><span>⌖</span>Explorar</a><a href="#noticias"><span>☰</span>Notícias</a><a href="#comunidade"><span>♡</span>Comunidade</a>
+</nav>
+
+<!-- Instruções iPhone -->
+<div class="folha" id="folhaIphone" hidden>
+  <div class="folha-in">
+    <h3>Instalar no iPhone</h3>
+    <p>Fica com ícone no ecrã, como qualquer app.</p>
+    <ol><li><span>1</span>No Safari, toque em Partilhar (quadrado com seta)</li><li><span>2</span>Escolha «Adicionar ao ecrã principal»</li><li><span>3</span>Toque em «Adicionar». Pronto!</li></ol>
+    <button class="btn largo" id="fecharFolha">Entendi</button>
+  </div>
+</div>
+
+<script src="js/dados.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
