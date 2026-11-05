@@ -1,6 +1,6 @@
 // Guarda a "casca" do site para abrir rápido e funcionar com pouca rede
-const VERSAO = "ac-v9";
-const CASCA = ["./", "index.html", "css/estilo.css?v=9", "js/dados.js?v=9", "js/app.js?v=9", "manifest.webmanifest", "icones/icone-192.png", "icones/icone-512.png", "img/hero-02.jpg"];
+const VERSAO = "ac-v10";
+const CASCA = ["./", "index.html", "css/estilo.css?v=10", "js/dados.js?v=10", "js/app.js?v=10", "manifest.webmanifest", "icones/icone-192.png", "icones/icone-512.png", "img/hero-02.jpg"];
 
 self.addEventListener("install", e => {
   self.skipWaiting();

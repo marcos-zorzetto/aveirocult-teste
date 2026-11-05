@@ -521,6 +521,25 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .titulo-nota { max-width: none; }
 }
 
+/* ---------- Artistas ---------- */
+#artistas[hidden] { display: none; }
+.artistas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.artista { display: grid; grid-template-rows: auto 1fr; border-radius: 24px; overflow: hidden; background: var(--creme); transition: transform .5s var(--suave), box-shadow .5s; }
+.artista:hover { transform: translateY(-6px); box-shadow: var(--sombra-forte); }
+.artista-img { aspect-ratio: 4 / 3; background: linear-gradient(135deg, var(--primaria), var(--primaria-escura)); display: grid; place-items: center; color: var(--amarelo); }
+.artista-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.artista-img svg { width: 40px; height: 40px; }
+.artista-info { padding: 20px 22px 24px; display: grid; gap: 8px; align-content: start; }
+.artista-area { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--primaria); }
+.artista h3 { font-size: 19px; }
+.artista p { font-size: 14.5px; color: var(--cinza); }
+.artista-links { display: flex; gap: 8px; margin-top: 6px; }
+.artista-links a { font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--linha); transition: background .3s, color .3s, border-color .3s; }
+.artista-links a:hover { background: var(--primaria); color: #fff; border-color: var(--primaria); }
+.agenda .info { text-decoration: none; }
+@media (max-width: 900px) { .artistas { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .artistas { grid-template-columns: 1fr; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   [data-entrada], [data-reveal], .noticia, .agenda li, .concelho, .vantagens li, .hero-rodape { opacity: 1; transform: none; }

@@ -313,10 +313,45 @@ $("#fecharBarra").addEventListener("click", () => {
 
 $("#ano").textContent = new Date().getFullYear();
 
+// Base de dados (Supabase). A chave abaixo é pública por desenho: só permite inserir submissões pendentes e ler o que foi aprovado.
+const ENVIO = { url: "https://otcpgtauymtavygscxfo.supabase.co", chave: "sb_publishable_DiaWIBUyBbCHnCDolUWFuw_fjONpncM", tabela: "submissoes" };
+const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}` };
+
+/* ---------- Agenda e artistas vindos da base de dados (eventos aprovados) ---------- */
+(async () => {
+  const MESES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+  const hoje = new Date().toISOString().slice(0, 10);
+  const ler = async (vista, q) => { try { const r = await fetch(`${ENVIO.url}/rest/v1/${vista}?${q}`, { headers: cabecalhos }); return r.ok ? await r.json() : []; } catch { return []; } };
+  const eventos = await ler("eventos_publicos", `select=*&data=gte.${hoje}&order=data.asc,hora.asc&limit=10`);
+  if (eventos.length) {
+    $("#agendaLista").innerHTML = eventos.map((e, i) => {
+      const d = new Date(e.data + "T12:00:00"), onde = [e.local, e.concelho].filter(Boolean).join(" · ");
+      const info = `<b>${esc(e.titulo)}</b><span>${icone("pin")}${esc(onde)}${e.hora ? " · " + esc(e.hora.slice(0, 5)) : ""}</span>`;
+      return `<li style="--i:${i}">
+        <span class="dia"><b>${String(d.getDate()).padStart(2, "0")}</b><span>${MESES[d.getMonth()]}</span></span>
+        ${e.link ? `<a class="info" href="${esc(e.link)}" target="_blank" rel="noopener">${info}</a>` : `<div class="info">${info}</div>`}
+        ${e.link ? `<a class="ler" href="${esc(e.link)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(e.titulo)}">${icone("seta")}</a>` : ""}
+      </li>`;
+    }).join("");
+    observarReveal($$("#agendaLista li"));
+  }
+  const artistas = await ler("artistas_publicos", "select=*&order=criado_em.desc&limit=12");
+  const sec = $("#artistas");
+  if (sec && artistas.length) {
+    $("#artistasLista").innerHTML = artistas.map((a, i) => `<article class="artista" data-reveal style="--i:${i}">
+      <div class="artista-img">${a.imagem ? `<img src="${esc(a.imagem)}" alt="" loading="lazy">` : `<span>${icone("mic")}</span>`}</div>
+      <div class="artista-info">
+        <span class="artista-area">${esc(a.categoria || "")}${a.concelho ? " · " + esc(a.concelho) : ""}</span>
+        <h3>${esc(a.titulo)}</h3>
+        <p>${esc((a.descricao || "").slice(0, 160))}${(a.descricao || "").length > 160 ? "…" : ""}</p>
+        <div class="artista-links">${a.site ? `<a href="${esc(a.site)}" target="_blank" rel="noopener">Site</a>` : ""}${a.rede ? `<a href="${esc(a.rede)}" target="_blank" rel="noopener">Redes</a>` : ""}</div>
+      </div>
+    </article>`).join("");
+    sec.hidden = false; observarReveal($$("#artistasLista [data-reveal]"));
+  }
+})();
+
 /* ---------- Divulgar: envio de eventos e artistas ---------- */
-// Quando o backend estiver ligado (Supabase), preencher estes dois valores.
-// Sem backend, os envios ficam guardados neste navegador (localStorage "ac-envios") e a mensagem de sucesso aparece na mesma.
-const ENVIO = { url: "", chave: "", tabela: "submissoes" };
 (() => {
   const form = $("#formDivulgar"); if (!form) return;
   const seg = form.querySelector(".segmento"), grupos = [...form.querySelectorAll("[data-grupo]")], erro = $("#formErro"), ok = $("#formOk");
@@ -339,12 +374,18 @@ const ENVIO = { url: "", chave: "", tabela: "submissoes" };
   [...seg.querySelectorAll("button")].forEach(b => b.addEventListener("click", () => mudarTipo(b.dataset.tipo)));
   mudarTipo("evento");
 
-  async function imagemBase64(f) {
+  // Reduz a imagem no próprio telemóvel (máx. 1600 px, JPEG) e envia para o Storage
+  async function enviarImagem(f) {
     if (!f || !f.size) return null;
     if (f.size > 5 * 1024 * 1024) throw new Error("A imagem tem mais de 5 MB. Escolhe uma mais leve.");
     const img = await createImageBitmap(f); const esc_ = Math.min(1, 1600 / Math.max(img.width, img.height));
     const c = document.createElement("canvas"); c.width = Math.round(img.width * esc_); c.height = Math.round(img.height * esc_);
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .82);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .82));
+    const nome = `envios/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+    const r = await fetch(`${ENVIO.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { ...cabecalhos, "Content-Type": "image/jpeg", "x-upsert": "false" }, body: blob });
+    if (!r.ok) throw new Error("Não foi possível enviar a imagem. Tenta sem imagem ou com outra.");
+    return `${ENVIO.url}/storage/v1/object/public/imagens/${nome}`;
   }
 
   form.addEventListener("submit", async e => {
@@ -352,15 +393,15 @@ const ENVIO = { url: "", chave: "", tabela: "submissoes" };
     if (!form.checkValidity()) { erro.textContent = "Falta preencher alguns campos obrigatórios (marcados com *)."; erro.hidden = false; form.querySelector(":invalid")?.focus(); return; }
     const btn = form.querySelector('[type="submit"]'); btn.disabled = true; btn.style.opacity = .7;
     try {
-      const fd = new FormData(form), dados = { tipo, criado_em: new Date().toISOString(), estado: "pendente" };
-      fd.forEach((v, k) => { if (k !== "imagem" && k !== "consent") dados[k] = String(v).trim(); });
-      dados.imagem = await imagemBase64(fd.get("imagem"));
-      if (ENVIO.url && ENVIO.chave) {
-        const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { "Content-Type": "application/json", apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`, Prefer: "return=minimal" }, body: JSON.stringify(dados) });
-        if (!r.ok) throw new Error("Não foi possível enviar agora. Tenta outra vez daqui a pouco.");
-      } else {
-        const fila = JSON.parse(localStorage.getItem("ac-envios") || "[]"); fila.push(dados); localStorage.setItem("ac-envios", JSON.stringify(fila.slice(-20)));
-      }
+      const fd = new FormData(form), v = k => String(fd.get(k) || "").trim() || null;
+      // mesma tabela para os dois tipos: "titulo" é o nome do evento ou o nome artístico; "categoria" é a categoria ou a área
+      const dados = tipo === "evento"
+        ? { tipo, titulo: v("titulo"), categoria: v("categoria"), concelho: v("concelho"), local: v("local"), data: v("data"), hora: v("hora"), descricao: v("descricao"), link: v("link") }
+        : { tipo, titulo: v("nome_artistico"), categoria: v("area"), concelho: v("concelho_artista"), descricao: v("bio"), site: v("site"), rede: v("rede") };
+      dados.responsavel = v("responsavel"); dados.email = v("email");
+      dados.imagem = await enviarImagem(fd.get("imagem"));
+      const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { ...cabecalhos, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(dados) });
+      if (!r.ok) throw new Error("Não foi possível enviar agora. Tenta outra vez daqui a pouco.");
       $("#formOkTexto").textContent = tipo === "evento" ? "O teu evento vai ser revisto e, assim que for aprovado, aparece na agenda do site e da app." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
       form.hidden = true; ok.hidden = false; ok.scrollIntoView({ behavior: "smooth", block: "center" });
       avisar("Enviado com sucesso");

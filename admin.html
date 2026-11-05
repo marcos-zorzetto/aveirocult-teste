@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Moderação · Aveiro Cult</title>
+  <link rel="icon" href="icones/icone-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css?v=1">
+</head>
+<body>
+
+<header class="topo">
+  <a class="marca" href="./"><span class="a">Aveiro</span> <span class="c">Cult</span></a>
+  <span class="topo-tit">Moderação</span>
+  <button class="btn-sair" id="sair" type="button" hidden>Sair</button>
+</header>
+
+<main>
+  <!-- Entrada -->
+  <section class="entrada" id="entrada">
+    <form class="cartao" id="formEntrar">
+      <h1>Entrar</h1>
+      <p>Só para a equipa do Aveiro Cult. Aqui aprovas ou rejeitas os eventos e portfólios enviados pelo público.</p>
+      <label><span>Email</span><input name="email" type="email" required autocomplete="username"></label>
+      <label><span>Palavra-passe</span><input name="senha" type="password" required autocomplete="current-password"></label>
+      <p class="erro" id="erroEntrar" hidden></p>
+      <button class="btn" type="submit">Entrar</button>
+    </form>
+  </section>
+
+  <!-- Painel -->
+  <section class="painel" id="painel" hidden>
+    <div class="abas" id="abas">
+      <button class="on" data-estado="pendente" type="button">Pendentes <b id="nPend">0</b></button>
+      <button data-estado="aprovado" type="button">Aprovados <b id="nAprov">0</b></button>
+      <button data-estado="rejeitado" type="button">Rejeitados <b id="nRej">0</b></button>
+    </div>
+    <div class="filtros">
+      <select id="filtroTipo"><option value="">Eventos e artistas</option><option value="evento">Só eventos</option><option value="artista">Só artistas</option></select>
+      <button class="btn-leve" id="atualizar" type="button">Atualizar</button>
+    </div>
+    <div class="lista" id="lista"></div>
+    <p class="vazio" id="vazio" hidden>Nada por aqui.</p>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="js/admin.js?v=1"></script>
+</body>
+</html>
