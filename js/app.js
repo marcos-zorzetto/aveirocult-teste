@@ -83,15 +83,19 @@ if (!reduzir) setInterval(() => mudarSlide(slide + 1), 7000);
 /* ---------- Hero: palavra que roda ---------- */
 const roda = $("#rodaPalavra");
 const PALAVRAS = ["Aveiro", "Ílhavo", "Ovar", "Águeda", "Espinho", "Arouca", "Estarreja", "a Feira", "Vagos", "Anadia"];
-let pal = 0;
+let pal = 0, atual = roda.querySelector("span");
+// Nota: com o separador em segundo plano o browser atrasa os temporizadores e vários ciclos podem disparar de seguida;
+// por isso guardamos a palavra atual, limpamos sobras e não trocamos enquanto a página não está visível.
 if (!reduzir) setInterval(() => {
-  const antiga = roda.querySelector("span");
+  if (document.hidden) return;
+  roda.querySelectorAll("span").forEach(s => { if (s !== atual) s.remove(); });
+  const antiga = atual;
   pal = (pal + 1) % PALAVRAS.length;
   const nova = document.createElement("span");
   nova.textContent = PALAVRAS[pal]; nova.className = "entra";
   antiga.className = "sai";
-  roda.appendChild(nova);
-  setTimeout(() => antiga.remove(), 700);
+  roda.appendChild(nova); atual = nova;
+  setTimeout(() => { if (antiga !== atual) antiga.remove(); }, 700);
 }, 4200);
 
 /* ---------- Contadores ---------- */
