@@ -69,3 +69,20 @@ input:focus, select:focus, textarea:focus { border-color: var(--primaria); box-s
 .item .tags span { background: #eef1fb; color: #002fa3; padding: 3px 9px; border-radius: 999px; }
 .item .tags i { color: #888; }
 .ligacao { background: none; border: 0; color: #002fa3; text-decoration: underline; cursor: pointer; font: inherit; font-size: 13px; padding: 0; }
+
+.modos { display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--linha); }
+.modos button { border: 0; background: none; padding: 12px 6px; margin-right: 12px; font: 700 15px var(--titulo); color: var(--cinza); cursor: pointer; border-bottom: 2px solid transparent; }
+.modos button.on { color: var(--tinta); border-bottom-color: var(--primaria); }
+.nota { color: var(--cinza); font-size: 13.5px; }
+.editor { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: #fff; border-radius: 20px; padding: 22px; margin-bottom: 18px; }
+.editor h3 { grid-column: 1 / -1; font-family: var(--titulo); font-size: 20px; }
+.editor label { display: grid; gap: 6px; font-size: 13.5px; font-weight: 600; }
+.editor label small { font-weight: 400; color: var(--cinza); }
+.editor .c-2 { grid-column: 1 / -1; }
+.editor input, .editor select, .editor textarea { width: 100%; }
+.editor textarea { resize: vertical; }
+.c-check { display: flex !important; align-items: center; gap: 10px; }
+.c-check input { width: auto; }
+.item .estado { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #eef1fb; color: var(--primaria); width: max-content; }
+.item .estado.rascunho { background: #fff3c4; color: #7a5a00; }
+@media (max-width: 640px) { .editor { grid-template-columns: 1fr; } }

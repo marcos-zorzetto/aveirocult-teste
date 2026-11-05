@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Sitemap: https://marcos-zorzetto.github.io/aveirocult-teste/sitemap.xml

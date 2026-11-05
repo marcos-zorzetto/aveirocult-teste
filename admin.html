@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=3">
+  <link rel="stylesheet" href="css/admin.css?v=4">
 </head>
 <body>
 
@@ -34,6 +34,11 @@
 
   <!-- Painel -->
   <section class="painel" id="painel" hidden>
+    <div class="modos" id="modos">
+      <button class="on" data-modo="submissoes" type="button">Eventos e artistas</button>
+      <button data-modo="noticias" type="button">Notícias</button>
+    </div>
+    <div id="modoSubmissoes">
     <div class="abas" id="abas">
       <button class="on" data-estado="pendente" type="button">Pendentes <b id="nPend">0</b></button>
       <button data-estado="aprovado" type="button">Aprovados <b id="nAprov">0</b></button>
@@ -45,10 +50,39 @@
     </div>
     <div class="lista" id="lista"></div>
     <p class="vazio" id="vazio" hidden>Nada por aqui.</p>
+    </div>
+
+    <!-- Notícias -->
+    <div id="modoNoticias" hidden>
+      <div class="filtros">
+        <button class="btn" id="novaNoticia" type="button">Nova notícia</button>
+        <button class="btn-leve" id="atualizarNoticias" type="button">Atualizar</button>
+        <span class="nota" id="nNoticias"></span>
+      </div>
+      <form class="editor" id="editorNoticia" hidden>
+        <input type="hidden" name="id">
+        <h3 id="editorTitulo">Nova notícia</h3>
+        <label class="c-2"><span>Título *</span><input name="titulo" type="text" required maxlength="160"></label>
+        <label class="c-2"><span>Resumo * <small>(1 a 2 frases; aparece nos cartões e no Google)</small></span><textarea name="resumo" required rows="2" maxlength="300"></textarea></label>
+        <label class="c-2"><span>Texto da notícia <small>(deixa uma linha em branco entre parágrafos)</small></span><textarea name="corpo" rows="10" maxlength="12000"></textarea></label>
+        <label><span>Categoria</span><select name="categoria"><option value="">Escolhe…</option></select></label>
+        <label><span>Concelho</span><select name="concelho"><option value="">Escolhe…</option></select></label>
+        <label><span>Data</span><input name="data" type="date" required></label>
+        <label><span>Ligação externa <small>(opcional)</small></span><input name="link_original" type="url" placeholder="https://"></label>
+        <label class="c-2"><span>Imagem <small>(JPEG, PNG ou WebP até 5 MB; fica reduzida a 1600 px)</small></span><input name="imagem" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="imagem_atual"></label>
+        <label class="c-check c-2"><input name="publicado" type="checkbox"><span>Publicada (visível no site e na app)</span></label>
+        <div class="acoes c-2">
+          <button class="btn" type="submit">Guardar</button>
+          <button class="btn-leve" type="button" id="cancelarNoticia">Cancelar</button>
+        </div>
+      </form>
+      <div class="lista" id="listaNoticias"></div>
+      <p class="vazio" id="vazioNoticias" hidden>Ainda não há notícias.</p>
+    </div>
   </section>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="js/admin.js?v=3"></script>
+<script src="js/admin.js?v=4"></script>
 </body>
 </html>

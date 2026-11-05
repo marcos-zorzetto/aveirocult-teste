@@ -15,7 +15,9 @@ const DIAS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
 const MESES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 const formatar = iso => { const d = new Date(iso + "T12:00:00"); return `${DIAS[d.getDay()]} · ${d.getDate()} ${MESES[d.getMonth()]}`; };
 const imagem = (n, extra = "") => n.f
-  ? `<img src="${n.f.replace(".jpg", "-800.jpg")}" srcset="${n.f.replace(".jpg", "-800.jpg")} 800w, ${n.f} 1600w" sizes="(max-width: 640px) 92vw, 420px" alt="${esc(n.t)}" loading="lazy" decoding="async" ${extra}>`
+  ? (n.f.startsWith("img/") && !n.f.includes("-800")
+    ? `<img src="${n.f.replace(".jpg", "-800.jpg")}" srcset="${n.f.replace(".jpg", "-800.jpg")} 800w, ${n.f} 1600w" sizes="(max-width: 640px) 92vw, 420px" alt="${esc(n.t)}" loading="lazy" decoding="async" ${extra}>`
+    : `<img src="${esc(n.f)}" alt="${esc(n.t)}" loading="lazy" decoding="async" ${extra}>`)
   : `<div class="sem" data-cat="${esc(n.cat)}">${icone("calendario")}</div>`;
 
 /* ---------- Barra de progresso e topo ---------- */
@@ -137,12 +139,12 @@ function filtrar() {
 function mostrar() {
   const itens = filtrar();
   lista.innerHTML = itens.map((n, i) => `
-    <a class="noticia" href="${n.l}" target="_blank" rel="noopener" style="--i:${i % 6}">
+    <a class="noticia" href="${esc(n.l)}"${n.interno ? "" : ' target="_blank" rel="noopener"'} style="--i:${i % 6}">
       <div class="img">${imagem(n)}</div>
       <div class="meta"><span>${formatar(n.d)}</span><span class="cat">${esc(n.cat)}</span></div>
       <h3>${realcar(n.t)}</h3>
       <p>${realcar(n.ex)}</p>
-      <span class="ler">Ler no site ${icone("seta")}</span>
+      <span class="ler">${n.interno ? "Ler notícia" : "Ler no site"} ${icone("seta")}</span>
     </a>`).join("");
   vazio.hidden = itens.length > 0;
   const filtros = [estado.termo && `“${estado.termo}”`, estado.cat, estado.concelho].filter(Boolean).join(" · ");
@@ -170,8 +172,8 @@ function mostrarAgenda() {
     const info = `<b>${realcar(e.titulo)}</b><span>${icone("pin")}${esc(onde)}${e.hora ? " · " + esc(e.hora.slice(0, 5)) : ""}</span>${etiqs}`;
     return `<li style="--i:${i % 10}">
       <span class="dia"><b>${String(d.getDate()).padStart(2, "0")}</b><span>${MESES[d.getMonth()]}</span></span>
-      ${e.link ? `<a class="info" href="${esc(e.link)}" target="_blank" rel="noopener">${info}</a>` : `<div class="info">${info}</div>`}
-      ${e.link ? `<a class="ler" href="${esc(e.link)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(e.titulo)}">${icone("seta")}</a>` : ""}
+      <a class="info" href="evento.html?id=${e.id}">${info}</a>
+      <a class="ler" href="evento.html?id=${e.id}" aria-label="Abrir ${esc(e.titulo)}">${icone("seta")}</a>
     </li>`;
   }).join("");
   $("#agendaVazio").hidden = todos.length > 0;
@@ -233,9 +235,11 @@ $$("#concelhos .concelho").forEach(b => b.addEventListener("click", () => {
 
 /* ---------- Destaques (carrossel) ---------- */
 const faixa = $("#faixaDestaques");
-const destacadas = NOTICIAS.filter(n => n.f).slice(0, 8);
+let destacadas = NOTICIAS.filter(n => n.f).slice(0, 8);
+function desenharDestaques() {
+destacadas = NOTICIAS.filter(n => n.f).slice(0, 8);
 faixa.innerHTML = destacadas.map(n => `
-  <a class="destaque" href="${n.l}" target="_blank" rel="noopener" data-tilt>
+  <a class="destaque" href="${esc(n.l)}"${n.interno ? "" : ' target="_blank" rel="noopener"'} data-tilt>
     ${imagem(n)}
     <span class="etiqueta">${esc(n.cat)}</span>
     <span class="data">${icone("calendario")}${formatar(n.d)}</span>
@@ -244,8 +248,12 @@ faixa.innerHTML = destacadas.map(n => `
     <span class="onde">${icone("pin")}${esc(n.onde)}</span>
     <span class="ler">${icone("seta")}</span>
   </a>`).join("");
+$("#destPontos").innerHTML = destacadas.map((_, i) => `<i${i === 0 ? ' class="on"' : ""}></i>`).join("");
+$$("#destPontos i").forEach((p, i) => p.addEventListener("click", () => faixa.scrollTo({ left: i * passoFaixa(), behavior: "smooth" })));
+$$("#faixaDestaques [data-tilt]").forEach(el => typeof ligarTilt === "function" && ligarTilt(el));
+}
+desenharDestaques();
 const pontos = $("#destPontos");
-pontos.innerHTML = destacadas.map((_, i) => `<i${i === 0 ? ' class="on"' : ""}></i>`).join("");
 const passoFaixa = () => (faixa.firstElementChild?.offsetWidth || 300) + 20;
 function atualizarPontos() {
   const i = Math.round(faixa.scrollLeft / passoFaixa());
@@ -256,7 +264,6 @@ function atualizarPontos() {
 faixa.addEventListener("scroll", atualizarPontos, { passive: true });
 $("#destAnt").addEventListener("click", () => faixa.scrollBy({ left: -passoFaixa(), behavior: "smooth" }));
 $("#destSeg").addEventListener("click", () => faixa.scrollBy({ left: passoFaixa(), behavior: "smooth" }));
-$$("#destPontos i").forEach((p, i) => p.addEventListener("click", () => faixa.scrollTo({ left: i * passoFaixa(), behavior: "smooth" })));
 // Arrastar com o rato
 let arrasto = null;
 faixa.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") return; arrasto = { x: e.clientX, s: faixa.scrollLeft, moveu: false }; });
@@ -273,16 +280,6 @@ new IntersectionObserver(([en]) => {
   }, 5000);
 }, { threshold: .4 }).observe(faixa);
 setTimeout(atualizarPontos, 100);
-
-/* ---------- Agenda ---------- */
-$("#agendaLista").innerHTML = AGENDA.map((a, i) => {
-  const n = NOTICIAS[a.i];
-  return `<li style="--i:${i}">
-    <span class="dia"><b>${esc(a.dia)}</b><span>${esc(a.mes)}</span></span>
-    <a class="info" href="${n.l}" target="_blank" rel="noopener"><b>${esc(a.t)}</b><span>${icone("pin")}${esc(a.onde)}</span></a>
-    <a class="ler" href="${n.l}" target="_blank" rel="noopener" aria-label="Abrir ${esc(a.t)}">${icone("seta")}</a>
-  </li>`;
-}).join("");
 
 /* ---------- Telemóvel ilustrativo ---------- */
 $("#tmHero").insertAdjacentHTML("afterbegin", `<img src="img/hero-02.jpg" alt="">`);
@@ -369,7 +366,17 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
   const hoje = new Date().toISOString().slice(0, 10);
   const ler = async (vista, q) => { try { const r = await fetch(`${ENVIO.url}/rest/v1/${vista}?${q}`, { headers: cabecalhos }); return r.ok ? await r.json() : []; } catch { return []; } };
   EVENTOS = await ler("eventos_publicos", `select=*&data=gte.${hoje}&order=data.asc,hora.asc&limit=300`);
-  if (EVENTOS.length) { mostrarTags(); mostrarAgenda(); }
+  if (EVENTOS.length) {
+    mostrarTags(); mostrarAgenda();
+    const it = EVENTOS.slice(0, 12).map(e => { const d = new Date(e.data + "T12:00:00"); return `${String(d.getDate()).padStart(2, "0")} ${MESES[d.getMonth()]} · ${e.titulo}${e.concelho ? " · " + e.concelho : ""}`; });
+    $("#ticker").innerHTML = [...it, ...it].map(t => `<span>${esc(t)}</span>`).join("");
+  }
+  const noticias = await ler("noticias", "select=id,slug,titulo,resumo,imagem,categoria,concelho,data&publicado=is.true&order=data.desc,id.desc&limit=60");
+  if (noticias.length) {
+    NOTICIAS.length = 0;
+    noticias.forEach(n => NOTICIAS.push({ t: n.titulo, d: n.data, cat: n.categoria || "", onde: n.concelho || "", f: n.imagem || "", ex: n.resumo || "", l: `noticia.html?n=${encodeURIComponent(n.slug || n.id)}`, interno: true }));
+    desenharDestaques(); mostrar(); setTimeout(atualizarPontos, 100);
+  }
   const parceiros = await ler("parceiros", "select=nome,link,imagem&ativo=is.true&order=ordem.asc,nome.asc&limit=24");
   const lp = $("#parceirosLista");
   if (lp) {
@@ -380,10 +387,10 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
   const sec = $("#artistas");
   if (sec && artistas.length) {
     $("#artistasLista").innerHTML = artistas.map((a, i) => `<article class="artista" data-reveal style="--i:${i}">
-      <div class="artista-img"><span>${icone("mic")}</span>${a.imagem ? `<img src="${esc(a.imagem)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</div>
+      <a class="artista-img" href="artista.html?id=${a.id}" aria-label="${esc(a.titulo)}"><span>${icone("mic")}</span>${a.imagem ? `<img src="${esc(a.imagem)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</a>
       <div class="artista-info">
         <span class="artista-area">${esc(a.categoria || "")}${a.concelho ? " · " + esc(a.concelho) : ""}</span>
-        <h3>${esc(a.titulo)}</h3>
+        <h3><a href="artista.html?id=${a.id}">${esc(a.titulo)}</a></h3>
         <p>${esc((a.descricao || "").slice(0, 160))}${(a.descricao || "").length > 160 ? "…" : ""}</p>
         <div class="artista-links">${a.site ? `<a href="${esc(a.site)}" target="_blank" rel="noopener">Site</a>` : ""}${a.rede ? `<a href="${esc(a.rede)}" target="_blank" rel="noopener">Redes</a>` : ""}</div>
       </div>
@@ -429,8 +436,11 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
     return `${ENVIO.url}/storage/v1/object/public/imagens/${nome}`;
   }
 
+  const abertoEm = Date.now();
   form.addEventListener("submit", async e => {
     e.preventDefault(); form.classList.add("validar");
+    // proteção anti-spam: robôs preenchem o campo escondido ou submetem em menos de 4 segundos
+    if (form.querySelector('[name="website"]').value || Date.now() - abertoEm < 4000) { form.hidden = true; ok.hidden = false; return; }
     if (!form.checkValidity()) { erro.textContent = "Falta preencher alguns campos obrigatórios (marcados com *)."; erro.hidden = false; form.querySelector(":invalid")?.focus(); return; }
     const btn = form.querySelector('[type="submit"]'); btn.disabled = true; btn.style.opacity = .7;
     try {
@@ -443,7 +453,7 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
       dados.responsavel = v("responsavel"); dados.email = v("email");
       dados.imagem = await enviarImagem(fd.get("imagem"));
       const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { ...cabecalhos, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(dados) });
-      if (!r.ok) throw new Error("Não foi possível enviar agora. Tenta outra vez daqui a pouco.");
+      if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(/limite/.test(t) ? "Já recebemos várias submissões deste email na última hora. Tenta mais tarde." : "Não foi possível enviar agora. Tenta outra vez daqui a pouco."); }
       $("#formOkTexto").textContent = tipo === "evento" ? "O teu evento vai ser revisto e, assim que for aprovado, aparece na agenda do site e da app." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
       form.hidden = true; ok.hidden = false; ok.scrollIntoView({ behavior: "smooth", block: "center" });
       avisar("Enviado com sucesso");

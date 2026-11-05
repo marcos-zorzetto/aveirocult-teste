@@ -564,6 +564,10 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 @media (max-width: 900px) { .parceiros { grid-template-columns: repeat(3, 1fr); } .parceiros-cta { flex-direction: column; align-items: flex-start; } }
 @media (max-width: 640px) { .parceiros { grid-template-columns: repeat(2, 1fr); gap: 10px; } .parceiros-cta { padding: 22px 18px; } }
 
+.artista-info h3 a { color: inherit; }
+.artista-info h3 a:hover { color: var(--primaria); }
+.armadilha { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   [data-entrada], [data-reveal], .noticia, .agenda li, .concelho, .vantagens li, .hero-rodape { opacity: 1; transform: none; }
