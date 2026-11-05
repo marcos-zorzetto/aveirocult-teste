@@ -335,6 +335,12 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
     }).join("");
     observarReveal($$("#agendaLista li"));
   }
+  const parceiros = await ler("parceiros", "select=nome,link,imagem&ativo=is.true&order=ordem.asc,nome.asc&limit=24");
+  const lp = $("#parceirosLista");
+  if (lp) {
+    lp.innerHTML = parceiros.length ? parceiros.map(p => `<a class="parceiro" href="${esc(p.link || "#")}" target="_blank" rel="noopener" title="${esc(p.nome)}">${p.imagem ? `<img src="${esc(p.imagem)}" alt="${esc(p.nome)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))">` : `<span>${esc(p.nome)}</span>`}</a>`).join("")
+      : `<p class="parceiros-vazio">Sê a primeira empresa a apoiar a cultura do distrito.</p>`;
+  }
   const artistas = await ler("artistas_publicos", "select=*&order=criado_em.desc&limit=12");
   const sec = $("#artistas");
   if (sec && artistas.length) {

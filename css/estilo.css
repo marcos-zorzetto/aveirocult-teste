@@ -74,7 +74,7 @@ h3 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; }
 .abertura-dobra { position: absolute; top: 0; bottom: 0; right: 0; width: 26px; background: linear-gradient(90deg, transparent, rgba(0,0,0,.12)); opacity: var(--dobra, 0); }
 .abertura-verso { transform: rotateY(180deg); background: #f3efe7 repeating-linear-gradient(0deg, transparent 0 31px, rgba(29,63,154,.07) 31px 32px); box-shadow: inset 50px 0 80px -40px rgba(0,0,0,.35); }
 .abertura-verso::before { content: ""; position: absolute; top: 0; bottom: 0; left: 56px; width: 2px; background: rgba(0,47,163,.45); }
-.abertura-logo { width: clamp(180px, 32vw, 300px); height: auto; opacity: 0; transform: scale(.82); will-change: transform, opacity; filter: drop-shadow(0 18px 30px rgba(15,15,20,.12)); }
+.abertura-logo { width: clamp(200px, 40vw, 340px); height: auto; opacity: 0; transform: scale(.82); will-change: transform, opacity; filter: drop-shadow(0 18px 30px rgba(15,15,20,.12)); }
 .abertura-nota { font-family: var(--titulo); text-transform: uppercase; letter-spacing: .22em; font-size: 11px; color: var(--cinza); text-align: center; max-width: calc(100% - 48px); padding-left: .22em; line-height: 1.7; opacity: 0; transform: translateY(10px); transition: opacity .8s var(--suave) .5s, transform .8s var(--suave) .5s; }
 .abertura.pronta .abertura-nota { opacity: 1; transform: none; }
 .abertura-vento { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -83,11 +83,12 @@ h3 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; }
 .abertura-saltar:hover { color: var(--tinta); border-color: var(--tinta); }
 
 /* ---------- Marca ---------- */
-.logo-marca { font-family: var(--titulo); font-weight: 800; font-size: 24px; letter-spacing: -.03em; display: inline-flex; gap: .2em; line-height: 1; }
-.logo-marca .a::first-letter { color: var(--azul); }
-.logo-marca .c::first-letter { color: var(--amarelo); }
-.logo-marca.grande { font-size: 34px; }
-.topo.escuro .logo-marca .a::first-letter { color: #6d8aef; }
+/* Logótipo oficial em vetor (símbolo #i-logo): as letras pretas seguem a cor do texto, o A azul clareia sobre fundo escuro */
+.logo-marca { display: inline-flex; align-items: center; line-height: 1; color: var(--tinta); }
+.logo-svg { display: block; height: 44px; width: auto; aspect-ratio: 1472 / 808; }
+.logo-marca.grande .logo-svg { height: 58px; }
+.topo .logo-marca { color: inherit; }
+.topo:not(.rolado) .logo-marca { --logo-azul: #6d8aef; }
 
 /* ---------- Progresso, cursor ---------- */
 .progresso { position: fixed; top: 0; left: 0; height: 3px; width: 100%; background: var(--primaria); transform-origin: left; transform: scaleX(0); z-index: 900; }
@@ -298,7 +299,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .tm-topo { display: flex; justify-content: space-between; align-items: center; padding: 12px 22px 0; font-size: 12px; font-weight: 600; }
 .tm-sinal { width: 34px; height: 10px; border-radius: 3px; background: linear-gradient(90deg, var(--tinta) 60%, #ccc 60%); }
 .tm-header { padding: 14px 18px 8px; }
-.tm-header .logo-marca { font-size: 17px; }
+.tm-header .logo-svg { height: 24px; }
 .tm-hero { position: relative; margin: 4px 14px 0; height: 150px; border-radius: 18px; overflow: hidden; background: var(--tinta); color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 14px; }
 .tm-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .75; }
 .tm-hero p, .tm-hero b { position: relative; }
@@ -539,6 +540,19 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .agenda .info { text-decoration: none; }
 @media (max-width: 900px) { .artistas { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .artistas { grid-template-columns: 1fr; } }
+
+/* ---------- Parceiros ---------- */
+.parceiros-sec { background: var(--creme); }
+.parceiros { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+.parceiro { display: grid; place-items: center; aspect-ratio: 1; background: #fff; border-radius: 20px; padding: 18px; transition: transform .45s var(--suave), box-shadow .45s; position: relative; overflow: hidden; }
+.parceiro:hover { transform: translateY(-5px); box-shadow: var(--sombra-forte); }
+.parceiro img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.parceiro span { font-family: var(--titulo); font-weight: 700; font-size: 14px; text-align: center; color: var(--tinta); }
+.parceiros-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 28px; padding: 26px 30px; border-radius: 24px; background: #fff; border: 1px solid var(--linha); }
+.parceiros-cta h3 { font-size: 20px; margin-bottom: 4px; }
+.parceiros-cta p { color: var(--cinza); font-size: 15px; max-width: 560px; }
+@media (max-width: 900px) { .parceiros { grid-template-columns: repeat(3, 1fr); } .parceiros-cta { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 640px) { .parceiros { grid-template-columns: repeat(2, 1fr); gap: 10px; } .parceiros-cta { padding: 22px 18px; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
