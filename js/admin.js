@@ -43,7 +43,7 @@ async function carregar() {
   const itens = await r.json();
   $("#vazio").hidden = itens.length > 0;
   $("#lista").innerHTML = itens.map(i => `<article class="item" data-id="${i.id}">
-    <div class="item-img">${i.imagem ? `<a href="${esc(i.imagem)}" target="_blank" rel="noopener"><img src="${esc(i.imagem)}" alt=""></a>` : "sem imagem"}</div>
+    <div class="item-img">${i.imagem ? `<a href="${esc(i.imagem)}" target="_blank" rel="noopener"><img src="${esc(i.imagem)}" alt="" onerror="this.parentElement.parentElement.textContent='imagem indisponível'"></a>` : "sem imagem"}</div>
     <div class="item-corpo">
       <span class="etiq">${i.tipo === "evento" ? "Evento" : "Artista"} <i>· ${esc(i.categoria || "")}${i.concelho ? " · " + esc(i.concelho) : ""}</i></span>
       <h3>${esc(i.titulo)}</h3>

@@ -339,7 +339,7 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
   const sec = $("#artistas");
   if (sec && artistas.length) {
     $("#artistasLista").innerHTML = artistas.map((a, i) => `<article class="artista" data-reveal style="--i:${i}">
-      <div class="artista-img">${a.imagem ? `<img src="${esc(a.imagem)}" alt="" loading="lazy">` : `<span>${icone("mic")}</span>`}</div>
+      <div class="artista-img"><span>${icone("mic")}</span>${a.imagem ? `<img src="${esc(a.imagem)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</div>
       <div class="artista-info">
         <span class="artista-area">${esc(a.categoria || "")}${a.concelho ? " · " + esc(a.concelho) : ""}</span>
         <h3>${esc(a.titulo)}</h3>
