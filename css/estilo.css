@@ -24,8 +24,8 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-body { font-family: var(--fonte); color: var(--tinta); background: var(--fundo); line-height: 1.55; overflow-x: hidden; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; overflow-x: clip; }
+body { font-family: var(--fonte); color: var(--tinta); background: var(--fundo); line-height: 1.55; overflow-x: hidden; overflow-x: clip; }
 body.sem-rolar { overflow: hidden; }
 a { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; }
@@ -434,7 +434,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .telemovel-wrap { padding: 10px 0 0; }
   .telemovel { width: 240px; transform: none !important; animation: none; }
   .flutuante { font-size: 12px; padding: 8px 12px; }
-  .flutuante.f1 { top: 6%; left: 0; } .flutuante.f2 { top: 44%; right: 0; } .flutuante.f3 { bottom: 6%; left: 0; }
+  .flutuante.f1 { top: 30%; left: 0; } .flutuante.f2 { top: 52%; right: 0; } .flutuante.f3 { bottom: 12%; left: 0; }
   .hero-nums b { font-size: 22px; } .hero-nums span { font-size: 11px; letter-spacing: .06em; }
   .hero h1 { font-size: clamp(52px, 15vw, 84px); }
   .ticker { font-size: 12.5px; }
@@ -442,7 +442,8 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .cartao-com { padding: 24px 22px; }
   .titulo-sec { flex-direction: column; align-items: flex-start; gap: 12px; }
   .setas { align-self: flex-end; margin-top: -40px; }
-  .categorias { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
+  .categorias { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 16px; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
+  .categorias::after { content: ""; flex: 0 0 8px; }
   .categorias::-webkit-scrollbar { display: none; }
   .categoria { flex: 0 0 104px; scroll-snap-align: start; padding: 16px 6px 12px; font-size: 12.5px; gap: 8px; }
   .categoria .icone { width: 44px; height: 44px; border-radius: 13px; }
