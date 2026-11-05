@@ -471,3 +471,13 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   [data-entrada], [data-reveal], .noticia, .agenda li, .concelho, .vantagens li, .hero-rodape { opacity: 1; transform: none; }
 }
+
+/* ---------- Vento: a capa é soprada e o logótipo vira folha ---------- */
+body.livro .verso { display: none; }
+body.livro .frente::before, body.livro .frente::after, body.livro .sombra-pagina { display: none; }
+.vento, .folha-logo { display: none; }
+body.livro .vento { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
+body.livro .folha-logo { display: block; position: absolute; left: 0; top: 0; width: 64px; height: 64px; z-index: 6; pointer-events: none; opacity: 0; will-change: transform; filter: drop-shadow(0 10px 16px rgba(0,0,0,.4)); }
+body.livro .frente { will-change: opacity; }
+body.livro .topo-capa .logo { display: inline-block; transform-origin: center; will-change: transform; }
+body.livro .levado { will-change: transform; }

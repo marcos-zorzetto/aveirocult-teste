@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=3">
+  <link rel="stylesheet" href="css/estilo.css?v=4">
 </head>
 <body>
 
@@ -174,12 +174,14 @@
     </div>
   </div>
 </div>
-<div class="verso" aria-hidden="true">
-  <div class="verso-marca"><span class="a">Aveiro</span><span class="c">Cult</span></div>
-  <p class="verso-nota">Agenda cultural do distrito de Aveiro · 19 concelhos</p>
-  <span class="verso-pag">01</span>
 </div>
-</div>
+<!-- Vento: folhas a atravessar a capa, e o logótipo que se transforma numa folha -->
+<canvas class="vento" id="vento" aria-hidden="true"></canvas>
+<svg class="folha-logo" id="folhaLogo" viewBox="0 0 100 100" aria-hidden="true">
+  <defs><linearGradient id="gFolha" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1d3f9a"/><stop offset=".55" stop-color="#F2B705"/><stop offset="1" stop-color="#FC3C3C"/></linearGradient></defs>
+  <path d="M50 4 C 88 22, 96 66, 50 96 C 4 66, 12 22, 50 4 Z" fill="url(#gFolha)"/>
+  <path d="M50 12 V 88 M50 38 C 60 34, 68 28, 75 22 M50 58 C 62 54, 71 47, 79 39 M50 38 C 40 34, 32 28, 25 22 M50 58 C 38 54, 29 47, 21 39" stroke="rgba(255,255,255,.6)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</svg>
 </section>
 
 <!-- Página seguinte (fica por baixo da capa enquanto ela vira) -->
@@ -392,7 +394,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/dados.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/dados.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
 </body>
 </html>

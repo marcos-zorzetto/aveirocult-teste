@@ -33,19 +33,93 @@ const imagem = (n, extra = "") => n.f
 const hero = $("#inicio"), pagina = $("#pagina"), pagina2 = $("#pagina2");
 const livroAtivo = !reduzir;
 if (livroAtivo) document.body.classList.add("livro");
+const limitar = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const suave = t => t * t * (3 - 2 * t);
+// As animações de entrada (CSS) têm de terminar antes de aplicarmos transformações por rolagem
+$$("[data-entrada], .hero-rodape").forEach(el => el.addEventListener("animationend", () => { el.style.animation = "none"; el.style.opacity = ""; }, { once: true }));
+
+// Elementos da capa que o vento leva, com o momento em que cada um começa a voar (0 a 1 da rolagem)
+const levados = livroAtivo ? [
+  { el: $(".topo-capa .topo-acoes"), s: .00, dy: -.35, r: 18 },
+  { el: $(".topo-capa .menu"), s: .03, dy: -.25, r: -10 },
+  { el: $(".script"), s: .02, dy: -.4, r: -22 },
+  { el: $(".hero h1"), s: .06, dy: -.3, r: 12 },
+  { el: $(".hero-sub"), s: .10, dy: -.2, r: -8 },
+  { el: $(".pesquisa"), s: .14, dy: -.15, r: 6 },
+  { el: $(".chips"), s: .18, dy: -.1, r: -5 },
+  { el: $(".hero-rodape"), s: .12, dy: -.2, r: 9 }
+].filter(x => x.el) : [];
+const frente = $(".frente"), heroFundo0 = $("#heroFundo"), logoCapa = $(".topo-capa .logo"), folhaLogo = $("#folhaLogo");
+
 function virarPagina() {
   if (!livroAtivo) return;
-  const h = hero.offsetHeight || innerHeight;
-  const p = Math.min(1, Math.max(0, scrollY / h));
-  const ang = p * 180, s = Math.sin(p * Math.PI);
-  // A página roda sobre a lombada (lado esquerdo) e levanta ligeiramente a meio
-  pagina.style.transform = `rotateY(${-ang}deg) rotateX(${-s * 3}deg)`;
-  pagina.style.setProperty("--s", (s * .9).toFixed(3));
-  pagina2.style.setProperty("--sp", (s * .85).toFixed(3));
+  const h = hero.offsetHeight || innerHeight, w = innerWidth;
+  const p = limitar(scrollY / h);
+  // Cada elemento é soprado para a direita e para cima, a rodar, com um pequeno ondular
+  levados.forEach(({ el, s, dy, r }) => {
+    const q = suave(limitar((p - s) / .55));
+    const x = q * w * 1.1, y = q * h * dy + Math.sin(q * Math.PI * 2) * 30 * (1 - q);
+    el.style.transform = q ? `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(q * r).toFixed(2)}deg)` : "";
+    el.style.opacity = q ? String(1 - suave(limitar((q - .55) / .45))) : "";
+  });
+  // O fundo desliza com o vento e a capa desvanece no fim, revelando a página seguinte
+  heroFundo0.style.transform = `translateX(${(p * w * .18).toFixed(1)}px) scale(${1 + p * .12})`;
+  frente.style.opacity = String(1 - suave(limitar((p - .5) / .45)));
+  // O logótipo encolhe e transforma-se numa folha que voa num arco até sair pelo canto superior direito
+  const q1 = suave(limitar(p / .18)), q2 = limitar((p - .06) / .8);
+  logoCapa.style.transform = `scale(${1 - q1 * .7}) rotate(${(q1 * -35).toFixed(1)}deg) translate(${q1 * 30}px, ${-q1 * 10}px)`;
+  logoCapa.style.opacity = String(1 - q1);
+  if (q2 > 0 && q2 < 1) {
+    const r0 = logoCapa.getBoundingClientRect(), hr = hero.getBoundingClientRect();
+    const x0 = r0.left + r0.width / 2 - hr.left, y0 = r0.top + r0.height / 2 - hr.top;
+    const x1 = w * 1.15, y1 = -h * .25, cx = w * .45, cy = h * .35; // curva do voo (Bézier)
+    const t = suave(q2), u = 1 - t;
+    const x = u * u * x0 + 2 * u * t * cx + t * t * x1, y = u * u * y0 + 2 * u * t * cy + t * t * y1 + Math.sin(t * Math.PI * 3) * 28;
+    const esc = .5 + Math.sin(t * Math.PI) * 1.2;
+    folhaLogo.style.transform = `translate(${(x - 32).toFixed(1)}px, ${(y - 32).toFixed(1)}px) rotate(${(t * 900).toFixed(1)}deg) scale(${esc.toFixed(3)})`;
+    folhaLogo.style.opacity = "1";
+  } else folhaLogo.style.opacity = "0";
+  vento.forca = p; vento.ligar(p < 1);
   hero.style.visibility = p >= 1 ? "hidden" : "";
-  topo.classList.toggle("na-capa", p < .6); // o cabeçalho fixo só entra quando a capa já virou
+  topo.classList.toggle("na-capa", p < .6); // o cabeçalho fixo só entra quando a capa já foi
   return p;
 }
+
+/* ---------- Vento: folhas em canvas ---------- */
+const vento = (() => {
+  const c = $("#vento"); if (!c || !livroAtivo) return { forca: 0, ligar() {} };
+  const ctx = c.getContext("2d");
+  const CORES = ["#F2B705", "#FC3C3C", "#e07a1f", "#c9a227", "#1d3f9a", "#f0c94a", "#b83a2c"];
+  let W = 0, H = 0, folhas = [], ativo = false, raf = 0, t = 0;
+  const N = () => (innerWidth < 700 ? 26 : 48);
+  function nova(f = {}, inicio = false) {
+    const s = 6 + Math.random() * 12;
+    return Object.assign(f, { x: inicio ? Math.random() * W : -40 - Math.random() * W * .4, y: inicio ? Math.random() * H : H * (.1 + Math.random() * .9), s, cor: CORES[Math.random() * CORES.length | 0], rot: Math.random() * 6.3, vr: (Math.random() - .5) * .08, fase: Math.random() * 6.3, vel: .4 + Math.random() * .8, osc: 12 + Math.random() * 30, alfa: .55 + Math.random() * .45 });
+  }
+  function medir() { W = c.width = c.clientWidth; H = c.height = c.clientHeight; if (!folhas.length) folhas = Array.from({ length: N() }, () => nova({}, true)); }
+  function folha(f) {
+    ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.globalAlpha = f.alfa * (.3 + .7 * Math.min(1, api.forca * 3)); // em repouso as folhas são discretas ctx.fillStyle = f.cor;
+    ctx.beginPath(); ctx.moveTo(0, -f.s); ctx.quadraticCurveTo(f.s * .95, -f.s * .25, 0, f.s); ctx.quadraticCurveTo(-f.s * .95, -f.s * .25, 0, -f.s); ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -f.s * .8); ctx.lineTo(0, f.s * .8); ctx.stroke();
+    ctx.restore();
+  }
+  function passo() {
+    if (!ativo) return;
+    t += .016;
+    const rajada = .6 + api.forca * 22 * (1 + .3 * Math.sin(t * 1.7)); // o vento cresce com a rolagem
+    ctx.clearRect(0, 0, W, H);
+    for (const f of folhas) {
+      f.x += f.vel * rajada; f.y += Math.sin(t * 1.3 + f.fase) * .6 - api.forca * f.vel * 6; f.rot += f.vr + api.forca * .12;
+      if (f.x > W + 60 || f.y < -60 || f.y > H + 60) nova(f);
+      folha(f);
+    }
+    raf = requestAnimationFrame(passo);
+  }
+  const api = { forca: 0, ligar(sim) { if (sim && !ativo) { ativo = true; medir(); raf = requestAnimationFrame(passo); } if (!sim && ativo) { ativo = false; cancelAnimationFrame(raf); } } };
+  addEventListener("resize", () => { if (ativo) medir(); });
+  api.ligar(true);
+  return api;
+})();
 
 /* ---------- Barra de progresso e topo ---------- */
 const topo = $("#topo");
