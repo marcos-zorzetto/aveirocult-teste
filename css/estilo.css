@@ -427,7 +427,19 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 }
 @media (max-width: 640px) {
   .caixa, .hero-in { width: min(1240px, 100% - 32px); }
-  .faixa { padding-inline: 16px; }
+  .faixa { padding-inline: 16px; gap: 14px; scroll-padding-inline: 16px; }
+  .destaque { flex-basis: calc(100vw - 64px); padding: 18px; border-radius: 20px; }
+  .destaque h3 { font-size: 19px; }
+  .categorias { mask-image: linear-gradient(90deg, #000 88%, transparent); -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); }
+  .telemovel-wrap { padding: 10px 0 0; }
+  .telemovel { width: 240px; transform: none !important; animation: none; }
+  .flutuante { font-size: 12px; padding: 8px 12px; }
+  .flutuante.f1 { top: 6%; left: 0; } .flutuante.f2 { top: 44%; right: 0; } .flutuante.f3 { bottom: 6%; left: 0; }
+  .hero-nums b { font-size: 22px; } .hero-nums span { font-size: 11px; letter-spacing: .06em; }
+  .hero h1 { font-size: clamp(52px, 15vw, 84px); }
+  .ticker { font-size: 12.5px; }
+  .promo { padding: 24px 20px; border-radius: 22px; }
+  .cartao-com { padding: 24px 22px; }
   .titulo-sec { flex-direction: column; align-items: flex-start; gap: 12px; }
   .setas { align-self: flex-end; margin-top: -40px; }
   .categorias { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
@@ -440,7 +452,6 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .agenda .dia b { font-size: 20px; }
   .agenda .ler { display: none; }
   .concelho { padding: 10px 16px; font-size: 14px; }
-  .flutuante.f1 { left: -6px; } .flutuante.f3 { left: 0; }
   .barra-app { gap: 10px; padding: 8px 10px; }
   .barra-app .btn-mini { padding: 8px 12px; }
 }
