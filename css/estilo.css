@@ -249,6 +249,16 @@ body:not(.revelado) [data-entrada], body:not(.revelado) .hero-rodape { animation
 .agenda .info b { display: block; font-family: var(--titulo); font-size: 19px; font-weight: 700; }
 .agenda .info span { display: inline-flex; align-items: center; gap: 6px; color: var(--cinza); font-size: 14px; margin-top: 4px; }
 .agenda .ler { width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid var(--linha); display: grid; place-items: center; transition: background .25s, color .25s, transform .3s var(--suave); }
+.agenda-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: -6px 0 22px; }
+.agenda-tags button, .agenda .etiq { padding: 7px 13px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--tinta-2); background: #fff; border: 1px solid var(--linha); transition: background .25s, color .25s, border-color .25s, transform .3s var(--suave); }
+.agenda-tags button i { font-style: normal; color: var(--cinza); margin-left: 2px; }
+.agenda-tags button:hover, .agenda .etiq:hover { border-color: var(--primaria); color: var(--primaria); transform: translateY(-2px); }
+.agenda-tags button.on, .agenda .etiq.on { background: var(--primaria); color: #fff; border-color: var(--primaria); }
+.agenda-tags button.on i { color: rgba(255,255,255,.7); }
+.agenda .info .etiqs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.agenda .etiq { padding: 4px 10px; font-size: 12px; background: var(--creme); border-color: transparent; }
+.agenda-pe { display: flex; justify-content: center; margin-top: 22px; }
+.agenda-pe .btn[hidden] { display: none; }
 .agenda li:hover .ler { background: var(--tinta); color: #fff; border-color: var(--tinta); transform: rotate(-45deg); }
 
 /* ---------- Notícias ---------- */

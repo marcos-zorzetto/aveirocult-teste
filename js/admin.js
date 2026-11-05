@@ -49,6 +49,7 @@ async function carregar() {
       <h3>${esc(i.titulo)}</h3>
       ${i.tipo === "evento" ? `<p class="meta">${dataPt(i.data)}${i.hora ? " · " + esc(i.hora.slice(0, 5)) : ""}${i.local ? " · " + esc(i.local) : ""}</p>` : ""}
       <p class="desc">${esc(i.descricao || "")}</p>
+      ${i.tipo === "evento" ? `<p class="tags">${(i.tags || []).length ? i.tags.map(t => `<span>#${esc(t)}</span>`).join("") : "<i>sem tags</i>"} <button class="ligacao" data-acao="tags">editar tags</button></p>` : ""}
       <p class="links">${[i.link, i.site, i.rede].filter(Boolean).map(l => `<a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`).join("")}</p>
       <p class="quem">Enviado por <b>${esc(i.responsavel || "?")}</b> · ${esc(i.email || "")} · ${dataPt(i.criado_em)}${i.nota_moderacao ? ` · nota: ${esc(i.nota_moderacao)}` : ""}</p>
       <div class="acoes">
@@ -68,6 +69,14 @@ async function mudar(id, acao) {
     const r = await fetch(`${BD.url}/rest/v1/submissoes?id=eq.${id}`, { method: "DELETE", headers: cab() });
     if (!r.ok) return avisar("Não foi possível apagar.");
     avisar("Apagado."); return carregar();
+  }
+  if (acao === "tags") {
+    const atual = $(`.item[data-id="${id}"] .tags`).textContent.replace("editar tags", "").replace("sem tags", "").replace(/#/g, "").trim().split(/\s+/).filter(Boolean).join(", ");
+    const novo = prompt("Tags do evento, separadas por vírgula (ex.: grátis, família, ao ar livre):", atual); if (novo === null) return;
+    const tags = novo.split(",").map(t => t.trim().toLowerCase().replace(/^#/, "").slice(0, 24)).filter(Boolean).slice(0, 8);
+    const r = await fetch(`${BD.url}/rest/v1/submissoes?id=eq.${id}`, { method: "PATCH", headers: { ...cab(), "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ tags }) });
+    if (!r.ok) return avisar("Não foi possível guardar as tags.");
+    avisar("Tags guardadas."); return carregar();
   }
   let nota = null;
   if (acao === "rejeitado") { nota = prompt("Motivo (opcional, fica só para a equipa):") ?? ""; }

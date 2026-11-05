@@ -64,3 +64,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--primaria); box-s
   .item-img { aspect-ratio: 16 / 9; }
   .topo-tit { display: none; }
 }
+
+.item .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; font-size: 13px; }
+.item .tags span { background: #eef1fb; color: #002fa3; padding: 3px 9px; border-radius: 999px; }
+.item .tags i { color: #888; }
+.ligacao { background: none; border: 0; color: #002fa3; text-decoration: underline; cursor: pointer; font: inherit; font-size: 13px; padding: 0; }

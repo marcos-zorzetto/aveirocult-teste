@@ -110,7 +110,8 @@ const itensTicker = AGENDA.map(a => `${a.dia} ${a.mes} · ${a.t} · ${a.onde}`);
 $("#ticker").innerHTML = [...itensTicker, ...itensTicker].map(t => `<span>${esc(t)}</span>`).join("");
 
 /* ---------- Pesquisa, filtros e lista de notícias ---------- */
-const estado = { termo: "", cat: "", concelho: "" };
+const estado = { termo: "", cat: "", concelho: "", tag: "" };
+let EVENTOS = [], agendaTudo = false; // eventos aprovados vindos da base de dados (preenchido mais abaixo)
 const lista = $("#lista"), vazio = $("#vazio"), resultado = $("#resultado");
 const selConcelho = $("#filtroConcelho");
 CONCELHOS.forEach(c => selConcelho.add(new Option(c, c)));
@@ -143,7 +144,49 @@ function mostrar() {
   const filtros = [estado.termo && `“${estado.termo}”`, estado.cat, estado.concelho].filter(Boolean).join(" · ");
   resultado.textContent = filtros ? `${itens.length} ${itens.length === 1 ? "resultado" : "resultados"} para ${filtros}` : `${NOTICIAS.length} notícias`;
   observarReveal($$("#lista .noticia"));
+  mostrarAgenda();
 }
+
+/* ---------- Agenda: a mesma pesquisa (texto, categoria, concelho e tags) filtra os eventos ---------- */
+function filtrarEventos() {
+  const q = normalizar(estado.termo);
+  return EVENTOS.filter(e =>
+    (!estado.cat || e.categoria === estado.cat) &&
+    (!estado.concelho || e.concelho === estado.concelho) &&
+    (!estado.tag || (e.tags || []).includes(estado.tag)) &&
+    (!q || normalizar([e.titulo, e.descricao, e.local, e.concelho, e.categoria, ...(e.tags || [])].filter(Boolean).join(" ")).includes(q)));
+}
+function marcarTag() { $$("#agendaTags button, .agenda .etiq").forEach(b => b.classList.toggle("on", b.dataset.tag === estado.tag)); }
+function mostrarAgenda() {
+  const ol = $("#agendaLista"); if (!ol || !EVENTOS.length) return;
+  const todos = filtrarEventos(), itens = agendaTudo ? todos : todos.slice(0, 10);
+  ol.innerHTML = itens.map((e, i) => {
+    const d = new Date(e.data + "T12:00:00"), onde = [e.local, e.concelho].filter(Boolean).join(" · ");
+    const etiqs = (e.tags || []).length ? `<span class="etiqs">${e.tags.map(t => `<button type="button" class="etiq${t === estado.tag ? " on" : ""}" data-tag="${esc(t)}">#${esc(t)}</button>`).join("")}</span>` : "";
+    const info = `<b>${realcar(e.titulo)}</b><span>${icone("pin")}${esc(onde)}${e.hora ? " · " + esc(e.hora.slice(0, 5)) : ""}</span>${etiqs}`;
+    return `<li style="--i:${i % 10}">
+      <span class="dia"><b>${String(d.getDate()).padStart(2, "0")}</b><span>${MESES[d.getMonth()]}</span></span>
+      ${e.link ? `<a class="info" href="${esc(e.link)}" target="_blank" rel="noopener">${info}</a>` : `<div class="info">${info}</div>`}
+      ${e.link ? `<a class="ler" href="${esc(e.link)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(e.titulo)}">${icone("seta")}</a>` : ""}
+    </li>`;
+  }).join("");
+  $("#agendaVazio").hidden = todos.length > 0;
+  const mais = $("#agendaMais"); mais.hidden = agendaTudo || todos.length <= 10; mais.textContent = `Ver mais ${todos.length - 10} eventos`;
+  const filtros = [estado.termo && `“${estado.termo}”`, estado.cat, estado.concelho, estado.tag && "#" + estado.tag].filter(Boolean).join(" · ");
+  $("#agendaResultado").textContent = filtros ? `${todos.length} ${todos.length === 1 ? "evento" : "eventos"} para ${filtros}` : `${EVENTOS.length} eventos aprovados nos próximos meses`;
+  observarReveal($$("#agendaLista li"));
+}
+function mostrarTags() {
+  const cont = {}; EVENTOS.forEach(e => (e.tags || []).forEach(t => cont[t] = (cont[t] || 0) + 1));
+  const top = Object.entries(cont).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  $("#agendaTags").innerHTML = top.map(([t, n]) => `<button type="button" data-tag="${esc(t)}">#${esc(t)} <i>${n}</i></button>`).join("");
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-tag]"); if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  estado.tag = estado.tag === b.dataset.tag ? "" : b.dataset.tag; agendaTudo = false; marcarTag(); mostrarAgenda(); irPara("#agenda");
+}, true);
+$("#agendaMais")?.addEventListener("click", () => { agendaTudo = true; mostrarAgenda(); });
 function posicaoDe(alvo) {
   if (alvo.id === "inicio") return 0;
   const cabecalho = topo.getBoundingClientRect().bottom - 28; // o topo fixo não deve tapar o título
@@ -162,26 +205,26 @@ function marcarCategoria(cat) {
 $("#pesquisa").addEventListener("submit", e => {
   e.preventDefault();
   estado.termo = $("#termo").value.trim();
-  estado.concelho = selConcelho.value;
-  mostrar(); irPara("#noticias");
+  estado.concelho = selConcelho.value; agendaTudo = false;
+  mostrar(); irPara("#agenda");
 });
 $("#termo").addEventListener("input", e => { estado.termo = e.target.value.trim(); mostrar(); });
 selConcelho.addEventListener("change", () => { estado.concelho = selConcelho.value; marcarConcelho(); mostrar(); });
-$$("#chips button").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; marcarCategoria(estado.cat); mostrar(); irPara("#noticias"); }));
+$$("#chips button").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; agendaTudo = false; marcarCategoria(estado.cat); mostrar(); irPara("#agenda"); }));
 
 // Categorias (cartões)
 $("#categorias").innerHTML = CATEGORIAS.map((c, i) => `
   <button type="button" class="categoria${c.f === "" ? " on" : ""}" data-f="${esc(c.f)}" data-reveal style="--i:${i}">
     <span class="icone">${icone(c.i)}</span>${esc(c.n)}
   </button>`).join("");
-$$("#categorias .categoria").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; marcarCategoria(estado.cat); mostrar(); irPara("#noticias"); }));
+$$("#categorias .categoria").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; agendaTudo = false; marcarCategoria(estado.cat); mostrar(); irPara("#agenda"); }));
 
 // Concelhos (chips)
 $("#concelhos").innerHTML = CONCELHOS.map((c, i) => `<button type="button" class="concelho" data-c="${esc(c)}" style="--i:${i}"><i></i>${esc(c)}</button>`).join("");
 function marcarConcelho() { $$("#concelhos .concelho").forEach(b => b.classList.toggle("on", b.dataset.c === estado.concelho)); }
 $$("#concelhos .concelho").forEach(b => b.addEventListener("click", () => {
   estado.concelho = b.classList.contains("on") ? "" : b.dataset.c;
-  selConcelho.value = estado.concelho; marcarConcelho(); mostrar(); irPara("#noticias");
+  selConcelho.value = estado.concelho; agendaTudo = false; marcarConcelho(); mostrar(); irPara("#agenda");
 }));
 
 /* ---------- Destaques (carrossel) ---------- */
@@ -319,22 +362,10 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
 
 /* ---------- Agenda e artistas vindos da base de dados (eventos aprovados) ---------- */
 (async () => {
-  const MESES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
   const hoje = new Date().toISOString().slice(0, 10);
   const ler = async (vista, q) => { try { const r = await fetch(`${ENVIO.url}/rest/v1/${vista}?${q}`, { headers: cabecalhos }); return r.ok ? await r.json() : []; } catch { return []; } };
-  const eventos = await ler("eventos_publicos", `select=*&data=gte.${hoje}&order=data.asc,hora.asc&limit=10`);
-  if (eventos.length) {
-    $("#agendaLista").innerHTML = eventos.map((e, i) => {
-      const d = new Date(e.data + "T12:00:00"), onde = [e.local, e.concelho].filter(Boolean).join(" · ");
-      const info = `<b>${esc(e.titulo)}</b><span>${icone("pin")}${esc(onde)}${e.hora ? " · " + esc(e.hora.slice(0, 5)) : ""}</span>`;
-      return `<li style="--i:${i}">
-        <span class="dia"><b>${String(d.getDate()).padStart(2, "0")}</b><span>${MESES[d.getMonth()]}</span></span>
-        ${e.link ? `<a class="info" href="${esc(e.link)}" target="_blank" rel="noopener">${info}</a>` : `<div class="info">${info}</div>`}
-        ${e.link ? `<a class="ler" href="${esc(e.link)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(e.titulo)}">${icone("seta")}</a>` : ""}
-      </li>`;
-    }).join("");
-    observarReveal($$("#agendaLista li"));
-  }
+  EVENTOS = await ler("eventos_publicos", `select=*&data=gte.${hoje}&order=data.asc,hora.asc&limit=300`);
+  if (EVENTOS.length) { mostrarTags(); mostrarAgenda(); }
   const parceiros = await ler("parceiros", "select=nome,link,imagem&ativo=is.true&order=ordem.asc,nome.asc&limit=24");
   const lp = $("#parceirosLista");
   if (lp) {
@@ -363,7 +394,7 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
   const seg = form.querySelector(".segmento"), grupos = [...form.querySelectorAll("[data-grupo]")], erro = $("#formErro"), ok = $("#formOk");
   let tipo = "evento";
   const selCat = form.querySelector('select[name="categoria"]');
-  CATEGORIAS.filter(c => c.f).forEach(c => selCat.insertAdjacentHTML("beforeend", `<option>${esc(c.f)}</option>`));
+  [...CATEGORIAS.filter(c => c.f).map(c => c.f), "Workshop", "Festival", "Exposição", "Literatura", "Mercado", "Outros"].forEach(c => selCat.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
   ["concelho", "concelho_artista"].forEach(n => { const s = form.querySelector(`select[name="${n}"]`); CONCELHOS.forEach(c => s.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`)); });
   const hoje = new Date().toISOString().slice(0, 10); form.querySelector('input[name="data"]').min = hoje;
 
@@ -402,7 +433,8 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
       const fd = new FormData(form), v = k => String(fd.get(k) || "").trim() || null;
       // mesma tabela para os dois tipos: "titulo" é o nome do evento ou o nome artístico; "categoria" é a categoria ou a área
       const dados = tipo === "evento"
-        ? { tipo, titulo: v("titulo"), categoria: v("categoria"), concelho: v("concelho"), local: v("local"), data: v("data"), hora: v("hora"), descricao: v("descricao"), link: v("link") }
+        ? { tipo, titulo: v("titulo"), categoria: v("categoria"), concelho: v("concelho"), local: v("local"), data: v("data"), hora: v("hora"), descricao: v("descricao"), link: v("link"),
+            tags: (v("tags") || "").split(",").map(t => t.trim().toLowerCase().replace(/^#/, "").slice(0, 24)).filter(Boolean).slice(0, 8) }
         : { tipo, titulo: v("nome_artistico"), categoria: v("area"), concelho: v("concelho_artista"), descricao: v("bio"), site: v("site"), rede: v("rede") };
       dados.responsavel = v("responsavel"); dados.email = v("email");
       dados.imagem = await enviarImagem(fd.get("imagem"));

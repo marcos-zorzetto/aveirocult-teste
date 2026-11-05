@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=12">
+  <link rel="stylesheet" href="css/estilo.css?v=13">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://aveirocult.com/wp-content/uploads/2020/09/Logo-novo-AveiroCult-2100-x-2100-px_20260314_013201_0000.png"}}</script>
 </head>
 <body>
@@ -215,10 +215,14 @@
       <div>
         <p class="sobre-titulo">Marca na agenda</p>
         <h2>Próximos <em>eventos</em></h2>
+        <p class="resultado" id="agendaResultado"></p>
       </div>
-      <a class="ver" href="#noticias">Ver todas as notícias <svg><use href="#i-seta"/></svg></a>
+      <a class="ver" href="#divulgar">Divulgar um evento <svg><use href="#i-seta"/></svg></a>
     </div>
+    <div class="agenda-tags" id="agendaTags" data-reveal></div>
     <ol class="agenda" id="agendaLista"></ol>
+    <p class="vazio" id="agendaVazio" hidden>Nenhum evento com essa pesquisa. Experimenta outra palavra, outro concelho ou limpa os filtros.</p>
+    <div class="agenda-pe"><button class="btn btn-escuro" id="agendaMais" type="button" hidden>Ver mais eventos</button></div>
   </div>
 </section>
 
@@ -339,6 +343,7 @@
           <label class="c c-2"><span>Local</span><input name="local" type="text" maxlength="120" placeholder="Sala, rua, espaço…"></label>
           <label class="c c-2"><span>Descrição *</span><textarea name="descricao" required minlength="40" maxlength="1200" rows="4" placeholder="O que vai acontecer, para quem é, preço, bilhetes…"></textarea></label>
           <label class="c c-2"><span>Link para bilhetes ou mais informação</span><input name="link" type="url" placeholder="https://"></label>
+          <label class="c c-2"><span>Tags <small>(separadas por vírgula, ajudam na pesquisa)</small></span><input name="tags" type="text" maxlength="200" placeholder="Ex.: grátis, família, ao ar livre"></label>
         </div>
 
         <div class="grupo" data-grupo="artista" hidden>
@@ -485,7 +490,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/dados.js?v=12"></script>
-<script src="js/app.js?v=12"></script>
+<script src="js/dados.js?v=13"></script>
+<script src="js/app.js?v=13"></script>
 </body>
 </html>
