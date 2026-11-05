@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/estilo.css?v=3">
 </head>
 <body>
 
@@ -116,6 +116,19 @@
 <section class="hero" id="inicio">
 <div class="pagina" id="pagina">
 <div class="frente">
+  <!-- Cabeçalho da capa: faz parte da página e vira com ela -->
+  <div class="topo-capa">
+    <div class="caixa topo-in">
+      <a class="logo" href="#inicio" aria-label="Aveiro Cult, início"><span class="logo-marca"><span class="a">Aveiro</span><span class="c">Cult</span></span></a>
+      <nav class="menu" aria-label="Capa">
+        <a href="#inicio" data-nav>Início</a><a href="#destaques" data-nav>Destaques</a><a href="#agenda" data-nav>Agenda</a><a href="#noticias" data-nav>Notícias</a><a href="#explorar" data-nav>Concelhos</a><a href="#comunidade" data-nav>Comunidade</a>
+      </nav>
+      <div class="topo-acoes">
+        <button class="btn btn-contorno" data-instalar data-magnetico><svg><use href="#i-download"/></svg>Instalar app</button>
+        <button class="hamburguer" data-abrir-menu aria-label="Abrir menu"><svg><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+  </div>
   <div class="hero-fundo" id="heroFundo"></div>
   <div class="hero-veu"></div>
   <div class="caixa hero-in">
@@ -379,7 +392,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/dados.js"></script>
-<script src="js/app.js"></script>
+<script src="js/dados.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>

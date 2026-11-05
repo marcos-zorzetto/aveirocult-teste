@@ -43,6 +43,7 @@ function virarPagina() {
   pagina.style.setProperty("--s", (s * .9).toFixed(3));
   pagina2.style.setProperty("--sp", (s * .85).toFixed(3));
   hero.style.visibility = p >= 1 ? "hidden" : "";
+  topo.classList.toggle("na-capa", p < .6); // o cabeçalho fixo só entra quando a capa já virou
   return p;
 }
 
@@ -82,7 +83,7 @@ function alternarMenu(abrir) {
   abrirMenu.setAttribute("aria-expanded", abrir);
   document.body.classList.toggle("sem-rolar", abrir);
 }
-abrirMenu.addEventListener("click", () => alternarMenu(true));
+$$("#abrirMenu, [data-abrir-menu]").forEach(b => b.addEventListener("click", () => alternarMenu(true)));
 $("#fecharMenu").addEventListener("click", () => alternarMenu(false));
 $$("#menuMovel a").forEach(a => a.addEventListener("click", () => alternarMenu(false)));
 addEventListener("keydown", e => { if (e.key === "Escape") { alternarMenu(false); folha.hidden = true; } });
