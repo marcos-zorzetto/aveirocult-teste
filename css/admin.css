@@ -86,3 +86,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--primaria); box-s
 .item .estado { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #eef1fb; color: var(--primaria); width: max-content; }
 .item .estado.rascunho { background: #fff3c4; color: #7a5a00; }
 @media (max-width: 640px) { .editor { grid-template-columns: 1fr; } }
+
+.auto { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--cinza); margin-left: auto; }
+.auto select { width: auto; padding: 8px 32px 8px 12px; border-radius: 999px; font-size: 13px; }
+@media (max-width: 640px) { .filtros { flex-wrap: wrap; } .auto { margin-left: 0; } }

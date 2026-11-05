@@ -454,7 +454,7 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
       dados.imagem = await enviarImagem(fd.get("imagem"));
       const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { ...cabecalhos, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(dados) });
       if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(/limite/.test(t) ? "Já recebemos várias submissões deste email na última hora. Tenta mais tarde." : "Não foi possível enviar agora. Tenta outra vez daqui a pouco."); }
-      $("#formOkTexto").textContent = tipo === "evento" ? "O teu evento vai ser revisto e, assim que for aprovado, aparece na agenda do site e da app." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
+      $("#formOkTexto").textContent = tipo === "evento" ? "Recebemos o teu evento. Pode aparecer já na agenda ou passar por uma revisão rápida da equipa antes de ser publicado." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
       form.hidden = true; ok.hidden = false; ok.scrollIntoView({ behavior: "smooth", block: "center" });
       avisar("Enviado com sucesso");
     } catch (err) { erro.textContent = err.message || "Algo correu mal. Tenta outra vez."; erro.hidden = false; }

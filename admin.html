@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=4">
+  <link rel="stylesheet" href="css/admin.css?v=6">
 </head>
 <body>
 
@@ -37,6 +37,7 @@
     <div class="modos" id="modos">
       <button class="on" data-modo="submissoes" type="button">Eventos e artistas</button>
       <button data-modo="noticias" type="button">Notícias</button>
+      <button data-modo="parceiros" type="button">Parceiros</button>
     </div>
     <div id="modoSubmissoes">
     <div class="abas" id="abas">
@@ -45,6 +46,7 @@
       <button data-estado="rejeitado" type="button">Rejeitados <b id="nRej">0</b></button>
     </div>
     <div class="filtros">
+      <label class="auto"><span>Publicação automática</span><select id="autoPublicar"><option value="nunca">Nunca: tudo passa por mim</option><option value="confiaveis">Quem já teve algo aprovado</option><option value="todos">Todos os que cumprem os critérios</option></select></label>
       <select id="filtroTipo"><option value="">Eventos e artistas</option><option value="evento">Só eventos</option><option value="artista">Só artistas</option></select>
       <button class="btn-leve" id="atualizar" type="button">Atualizar</button>
     </div>
@@ -79,10 +81,35 @@
       <div class="lista" id="listaNoticias"></div>
       <p class="vazio" id="vazioNoticias" hidden>Ainda não há notícias.</p>
     </div>
+
+    <!-- Parceiros (Empresas Amigas da Cultura) -->
+    <div id="modoParceiros" hidden>
+      <div class="filtros">
+        <button class="btn" id="novoParceiro" type="button">Novo parceiro</button>
+        <button class="btn-leve" id="atualizarParceiros" type="button">Atualizar</button>
+        <span class="nota" id="nParceiros"></span>
+      </div>
+      <form class="editor" id="editorParceiro" hidden>
+        <input type="hidden" name="id">
+        <h3 id="editorParceiroTitulo">Novo parceiro</h3>
+        <label><span>Nome da empresa *</span><input name="nome" type="text" required maxlength="120"></label>
+        <label><span>Plano</span><select name="plano"><option value="">Sem plano</option><option>Apoiante</option><option>Bronze</option><option>Prata</option><option>Ouro</option><option>Platina</option><option>Parceria cultural</option></select></label>
+        <label><span>Site ou rede social</span><input name="link" type="url" placeholder="https://"></label>
+        <label><span>Ordem <small>(menor aparece primeiro)</small></span><input name="ordem" type="number" value="10" min="0" max="999"></label>
+        <label class="c-2"><span>Logótipo <small>(PNG com fundo transparente fica melhor; até 5 MB)</small></span><input name="imagem" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="imagem_atual"></label>
+        <label class="c-check c-2"><input name="ativo" type="checkbox" checked><span>Ativo (visível no site e na app)</span></label>
+        <div class="acoes c-2">
+          <button class="btn" type="submit">Guardar</button>
+          <button class="btn-leve" type="button" id="cancelarParceiro">Cancelar</button>
+        </div>
+      </form>
+      <div class="lista" id="listaParceiros"></div>
+      <p class="vazio" id="vazioParceiros" hidden>Ainda não há parceiros.</p>
+    </div>
   </section>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="js/admin.js?v=4"></script>
+<script src="js/admin.js?v=6"></script>
 </body>
 </html>

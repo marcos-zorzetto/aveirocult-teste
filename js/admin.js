@@ -25,7 +25,7 @@ function sair() { sessao = null; sessionStorage.removeItem("ac-mod"); mostrar();
 function mostrar() {
   const ok = sessao && sessao.expira > Date.now();
   $("#entrada").hidden = !!ok; $("#painel").hidden = !ok; $("#sair").hidden = !ok;
-  if (ok) carregar(); else if (sessao) sair();
+  if (ok) { carregar(); lerAuto(); } else if (sessao) sair();
 }
 
 async function contar() {
@@ -95,6 +95,16 @@ $("#sair").addEventListener("click", sair);
 $("#abas").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; estado = b.dataset.estado; document.querySelectorAll("#abas button").forEach(x => x.classList.toggle("on", x === b)); carregar(); });
 $("#filtroTipo").addEventListener("change", e => { tipo = e.target.value; carregar(); });
 
+/* ---------- Definição: publicação automática ---------- */
+async function lerAuto() {
+  const r = await fetch(`${BD.url}/rest/v1/definicoes?chave=eq.auto_publicar&select=valor`, { headers: cab() });
+  const j = r.ok ? await r.json() : []; $("#autoPublicar").value = j[0]?.valor || "confiaveis";
+}
+$("#autoPublicar").addEventListener("change", async e => {
+  const r = await fetch(`${BD.url}/rest/v1/definicoes`, { method: "POST", headers: { ...cab(), Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify({ chave: "auto_publicar", valor: e.target.value, atualizado_em: new Date().toISOString() }) });
+  avisar(r.ok ? "Definição guardada." : "Não foi possível guardar.");
+});
+
 /* ---------- Notícias ---------- */
 const CATS = ["Música", "Teatro & Circo", "Gastronomia", "Família", "Desporto", "Tecnologia", "Workshop", "Festival", "Exposição", "Literatura", "Mercado", "Outros"];
 const CONCS = ["Águeda", "Albergaria-a-Velha", "Anadia", "Arouca", "Aveiro", "Castelo de Paiva", "Espinho", "Estarreja", "Ílhavo", "Mealhada", "Murtosa", "Oliveira de Azeméis", "Oliveira do Bairro", "Ovar", "Santa Maria da Feira", "São João da Madeira", "Sever do Vouga", "Vagos", "Vale de Cambra"];
@@ -106,8 +116,9 @@ let modo = "submissoes";
 $("#modos").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   modo = b.dataset.modo; document.querySelectorAll("#modos button").forEach(x => x.classList.toggle("on", x === b));
-  $("#modoSubmissoes").hidden = modo !== "submissoes"; $("#modoNoticias").hidden = modo !== "noticias";
+  $("#modoSubmissoes").hidden = modo !== "submissoes"; $("#modoNoticias").hidden = modo !== "noticias"; $("#modoParceiros").hidden = modo !== "parceiros";
   if (modo === "noticias") carregarNoticias();
+  if (modo === "parceiros") carregarParceiros();
 });
 async function carregarNoticias() {
   const r = await fetch(`${BD.url}/rest/v1/noticias?select=*&order=data.desc,id.desc&limit=200`, { headers: cab() });
@@ -140,15 +151,16 @@ function abrirEditor(n) {
   else { editor.data.value = new Date().toISOString().slice(0, 10); editor.publicado.checked = true; }
   editor.scrollIntoView({ behavior: "smooth", block: "start" }); editor.titulo.focus();
 }
-async function enviarImagemNoticia(f) {
+async function enviarImagemNoticia(f, pasta = "noticias", maxLado = 1600, manterPng = false) {
   if (!f || !f.size) return null;
   if (f.size > 5 * 1024 * 1024) throw new Error("A imagem tem mais de 5 MB.");
-  const img = await createImageBitmap(f); const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const img = await createImageBitmap(f); const k = Math.min(1, maxLado / Math.max(img.width, img.height));
   const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
   c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-  const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .84));
-  const nome = `envios/noticias/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-  const r = await fetch(`${BD.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { apikey: BD.chave, Authorization: `Bearer ${sessao.access_token}`, "Content-Type": "image/jpeg" }, body: blob });
+  const png = manterPng && f.type === "image/png"; // logótipos PNG mantêm a transparência
+  const blob = await new Promise(r => c.toBlob(r, png ? "image/png" : "image/jpeg", .84));
+  const nome = `envios/${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${png ? "png" : "jpg"}`;
+  const r = await fetch(`${BD.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { apikey: BD.chave, Authorization: `Bearer ${sessao.access_token}`, "Content-Type": png ? "image/png" : "image/jpeg" }, body: blob });
   if (!r.ok) throw new Error("Não foi possível enviar a imagem.");
   return `${BD.url}/storage/v1/object/public/imagens/${nome}`;
 }
@@ -184,3 +196,63 @@ $("#listaNoticias").addEventListener("click", async e => {
 $("#atualizar").addEventListener("click", carregar);
 $("#lista").addEventListener("click", e => { const b = e.target.closest("button[data-acao]"); if (!b) return; mudar(b.closest(".item").dataset.id, b.dataset.acao); });
 mostrar();
+
+
+/* ---------- Parceiros (Empresas Amigas da Cultura) ---------- */
+const editorP = $("#editorParceiro");
+async function carregarParceiros() {
+  const r = await fetch(`${BD.url}/rest/v1/parceiros?select=*&order=ordem.asc,nome.asc&limit=200`, { headers: cab() });
+  if (r.status === 401) return sair();
+  const itens = r.ok ? await r.json() : [];
+  $("#nParceiros").textContent = `${itens.length} parceiros · ${itens.filter(p => p.ativo).length} ativos`;
+  $("#vazioParceiros").hidden = itens.length > 0;
+  $("#listaParceiros").innerHTML = itens.map(p => `<article class="item" data-id="${p.id}">
+    <div class="item-img">${p.imagem ? `<img src="${esc(p.imagem)}" alt="" style="object-fit:contain;padding:10px" onerror="this.parentElement.textContent='imagem indisponível'">` : "sem logótipo"}</div>
+    <div class="item-corpo">
+      <span class="estado ${p.ativo ? "" : "rascunho"}">${p.ativo ? "Ativo" : "Inativo"}</span>
+      <span class="etiq">${esc(p.plano || "Sem plano")} · ordem ${p.ordem ?? 0}</span>
+      <h3>${esc(p.nome)}</h3>
+      <p class="links">${p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.link)}</a>` : ""}</p>
+      <div class="acoes">
+        <button class="pendente" data-parceiro="editar">Editar</button>
+        <button class="${p.ativo ? "rejeitar" : "aprovar"}" data-parceiro="${p.ativo ? "desativar" : "ativar"}">${p.ativo ? "Desativar" : "Ativar"}</button>
+        <button class="apagar" data-parceiro="apagar">Apagar</button>
+      </div>
+    </div>
+  </article>`).join("");
+  $("#listaParceiros").dataset.itens = JSON.stringify(itens);
+}
+function abrirEditorParceiro(p) {
+  editorP.reset(); editorP.hidden = false;
+  editorP.id.value = p?.id || ""; editorP.imagem_atual.value = p?.imagem || "";
+  $("#editorParceiroTitulo").textContent = p ? "Editar parceiro" : "Novo parceiro";
+  if (p) { editorP.nome.value = p.nome || ""; editorP.plano.value = p.plano || ""; editorP.link.value = p.link || ""; editorP.ordem.value = p.ordem ?? 10; editorP.ativo.checked = !!p.ativo; }
+  editorP.scrollIntoView({ behavior: "smooth", block: "start" }); editorP.nome.focus();
+}
+$("#novoParceiro").addEventListener("click", () => abrirEditorParceiro(null));
+$("#cancelarParceiro").addEventListener("click", () => { editorP.hidden = true; });
+$("#atualizarParceiros").addEventListener("click", carregarParceiros);
+editorP.addEventListener("submit", async e => {
+  e.preventDefault(); const b = editorP.querySelector('[type="submit"]'); b.disabled = true;
+  try {
+    const id = editorP.id.value;
+    const dados = { nome: editorP.nome.value.trim(), plano: editorP.plano.value || null, link: editorP.link.value.trim() || null, ordem: Number(editorP.ordem.value) || 0, ativo: editorP.ativo.checked };
+    const nova = await enviarImagemNoticia(editorP.imagem.files[0], "parceiros", 800, true);
+    dados.imagem = nova || editorP.imagem_atual.value || null;
+    const r = await fetch(`${BD.url}/rest/v1/parceiros${id ? "?id=eq." + id : ""}`, { method: id ? "PATCH" : "POST", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify(dados) });
+    if (!r.ok) throw new Error("Não foi possível guardar.");
+    avisar("Parceiro guardado."); editorP.hidden = true; carregarParceiros();
+  } catch (err) { avisar(err.message || "Algo correu mal."); }
+  b.disabled = false;
+});
+$("#listaParceiros").addEventListener("click", async e => {
+  const b = e.target.closest("[data-parceiro]"); if (!b) return;
+  const id = b.closest(".item").dataset.id, acao = b.dataset.parceiro;
+  const p = JSON.parse($("#listaParceiros").dataset.itens || "[]").find(x => String(x.id) === id);
+  if (acao === "editar") return abrirEditorParceiro(p);
+  if (acao === "apagar" && !confirm("Apagar este parceiro de vez?")) return;
+  const r = await fetch(`${BD.url}/rest/v1/parceiros?id=eq.${id}`, acao === "apagar" ? { method: "DELETE", headers: cab() }
+    : { method: "PATCH", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify({ ativo: acao === "ativar" }) });
+  if (!r.ok) return avisar("Não foi possível guardar.");
+  avisar(acao === "apagar" ? "Apagado." : acao === "ativar" ? "Parceiro visível no site." : "Parceiro escondido."); carregarParceiros();
+});
