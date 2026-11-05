@@ -109,8 +109,13 @@
 
 <main>
 
-<!-- HERO -->
+<!-- LIVRO: a capa (hero) vira como uma página e revela a página seguinte -->
+<div class="livro" id="livro">
+
+<!-- HERO / capa -->
 <section class="hero" id="inicio">
+<div class="pagina" id="pagina">
+<div class="frente">
   <div class="hero-fundo" id="heroFundo"></div>
   <div class="hero-veu"></div>
   <div class="caixa hero-in">
@@ -155,7 +160,18 @@
       </div>
     </div>
   </div>
+</div>
+<div class="verso" aria-hidden="true">
+  <div class="verso-marca"><span class="a">Aveiro</span><span class="c">Cult</span></div>
+  <p class="verso-nota">Agenda cultural do distrito de Aveiro · 19 concelhos</p>
+  <span class="verso-pag">01</span>
+</div>
+</div>
 </section>
+
+<!-- Página seguinte (fica por baixo da capa enquanto ela vira) -->
+<div class="pagina-2" id="pagina2">
+<div class="sombra-pagina"></div>
 
 <!-- Ticker -->
 <div class="ticker" aria-hidden="true">
@@ -188,6 +204,10 @@
   </div>
   <div class="caixa"><div class="pontos" id="destPontos"></div></div>
 </section>
+
+</div><!-- /pagina-2 -->
+<div class="pista" aria-hidden="true"></div>
+</div><!-- /livro -->
 
 <!-- Agenda -->
 <section class="bloco agenda-sec" id="agenda">

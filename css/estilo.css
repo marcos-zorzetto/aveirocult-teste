@@ -129,7 +129,7 @@ body.com-barra .topo { top: 60px; }
 .menu-movel-pe p { color: #a9a9b7; font-size: 14px; margin-top: 14px; }
 
 /* ---------- Hero ---------- */
-.hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; color: #fff; overflow: hidden; background: var(--tinta); }
+.hero { position: relative; min-height: 100svh; color: #fff; }
 .hero-fundo { position: absolute; inset: 0; }
 .hero-fundo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s ease; will-change: transform, opacity; }
 .hero-fundo img.ativo { opacity: 1; animation: kenburns 9s ease-out forwards; }
@@ -183,6 +183,29 @@ body.com-barra .topo { top: 60px; }
 .hero-nums div { display: flex; flex-direction: column; line-height: 1.1; }
 .hero-nums b { font-family: var(--titulo); font-size: 28px; font-weight: 800; }
 .hero-nums span { font-size: 12.5px; color: rgba(255,255,255,.7); text-transform: uppercase; letter-spacing: .1em; }
+
+/* ---------- Livro: a capa vira como uma página ---------- */
+.pagina, .frente { position: relative; min-height: inherit; }
+.frente { min-height: 100svh; display: flex; align-items: flex-end; overflow: hidden; background: var(--tinta); }
+.verso { display: none; }
+body.livro .livro { position: relative; z-index: 2; }
+body.livro .hero { position: sticky; top: 0; height: 100svh; min-height: 0; display: block; overflow: visible; background: transparent; z-index: 5; perspective: 1800px; perspective-origin: 50% 50%; pointer-events: none; }
+body.livro .pagina { position: absolute; inset: 0; min-height: 0; transform-origin: 0 50%; transform-style: preserve-3d; will-change: transform; pointer-events: auto; }
+body.livro .frente, body.livro .verso { position: absolute; inset: 0; min-height: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+body.livro .frente::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,.75), rgba(0,0,0,.25) 30%, transparent 60%); opacity: var(--s, 0); }
+body.livro .frente::before { content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 28px; z-index: 2; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18)); opacity: var(--s, 0); }
+body.livro .verso { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; transform: rotateY(180deg); background: #f4f0e8 repeating-linear-gradient(0deg, transparent 0 31px, rgba(29,63,154,.06) 31px 32px); color: var(--tinta); box-shadow: inset 60px 0 80px -40px rgba(0,0,0,.35); }
+body.livro .verso::before { content: ""; position: absolute; top: 0; bottom: 0; left: 64px; width: 2px; background: rgba(252,60,60,.45); }
+body.livro .verso::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,.5), transparent 45%); opacity: var(--s, 0); }
+.verso-marca { font-family: var(--titulo); font-weight: 800; font-size: clamp(56px, 12vw, 160px); letter-spacing: -.04em; display: flex; gap: .2em; opacity: .12; line-height: 1; }
+.verso-marca .a::first-letter { color: var(--azul); } .verso-marca .c::first-letter { color: var(--amarelo); }
+.verso-nota { font-family: var(--titulo); text-transform: uppercase; letter-spacing: .25em; font-size: 12px; color: var(--cinza); }
+.verso-pag { position: absolute; bottom: 28px; right: 36px; font-family: var(--titulo); font-weight: 700; color: var(--cinza); }
+body.livro .pagina-2 { position: sticky; top: 0; z-index: 1; margin-top: -100svh; background: #fff; padding-top: var(--topo-h); }
+body.livro.com-barra .pagina-2 { padding-top: calc(var(--topo-h) + 60px); }
+.sombra-pagina { display: none; }
+body.livro .sombra-pagina { display: block; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,.65), rgba(0,0,0,.2) 35%, transparent 70%); opacity: var(--sp, 0); }
+body.livro .pista { height: 100svh; }
 
 /* ---------- Ticker ---------- */
 .ticker { background: var(--vermelho); color: #fff; overflow: hidden; padding: 12px 0; font-family: var(--titulo); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }

@@ -29,6 +29,23 @@ const imagem = (n, extra = "") => n.f
   setTimeout(fechar, 1300);
 })();
 
+/* ---------- Livro: a capa vira com a rolagem ---------- */
+const hero = $("#inicio"), pagina = $("#pagina"), pagina2 = $("#pagina2");
+const livroAtivo = !reduzir;
+if (livroAtivo) document.body.classList.add("livro");
+function virarPagina() {
+  if (!livroAtivo) return;
+  const h = hero.offsetHeight || innerHeight;
+  const p = Math.min(1, Math.max(0, scrollY / h));
+  const ang = p * 180, s = Math.sin(p * Math.PI);
+  // A página roda sobre a lombada (lado esquerdo) e levanta ligeiramente a meio
+  pagina.style.transform = `rotateY(${-ang}deg) rotateX(${-s * 3}deg)`;
+  pagina.style.setProperty("--s", (s * .9).toFixed(3));
+  pagina2.style.setProperty("--sp", (s * .85).toFixed(3));
+  hero.style.visibility = p >= 1 ? "hidden" : "";
+  return p;
+}
+
 /* ---------- Barra de progresso e topo ---------- */
 const topo = $("#topo");
 const progresso = $("#progresso");
@@ -37,7 +54,8 @@ function aoRolar() {
   const y = scrollY;
   const total = document.documentElement.scrollHeight - innerHeight;
   progresso.style.transform = `scaleX(${total ? y / total : 0})`;
-  topo.classList.toggle("rolado", y > 40);
+  const p = virarPagina();
+  topo.classList.toggle("rolado", livroAtivo ? p > .3 : y > 40);
   // Esconde o topo ao descer, mostra ao subir (só depois do hero)
   topo.classList.toggle("esconder", y > innerHeight && y > ultimoY + 4);
   ultimoY = y;
@@ -155,7 +173,18 @@ function mostrar() {
   resultado.textContent = filtros ? `${itens.length} ${itens.length === 1 ? "resultado" : "resultados"} para ${filtros}` : `${NOTICIAS.length} notícias`;
   observarReveal($$("#lista .noticia"));
 }
-function irPara(id) { $(id).scrollIntoView({ behavior: reduzir ? "auto" : "smooth", block: "start" }); }
+function posicaoDe(alvo) {
+  if (alvo.id === "inicio") return 0;
+  const cabecalho = topo.getBoundingClientRect().bottom - 28; // o topo fixo não deve tapar o título
+  if (livroAtivo && pagina2.contains(alvo)) return hero.offsetHeight + alvo.getBoundingClientRect().top - pagina2.getBoundingClientRect().top - cabecalho;
+  return alvo.getBoundingClientRect().top + scrollY - cabecalho;
+}
+function irPara(id) { const alvo = $(id); if (alvo) scrollTo({ top: posicaoDe(alvo), behavior: reduzir ? "auto" : "smooth" }); }
+document.addEventListener("click", e => {
+  const a = e.target.closest('a[href^="#"]'); if (!a) return;
+  const alvo = $(a.getAttribute("href")); if (!alvo) return;
+  e.preventDefault(); irPara(a.getAttribute("href"));
+});
 function marcarCategoria(cat) {
   $$("#chips button").forEach(b => b.classList.toggle("on", b.dataset.f === cat));
   $$("#categorias .categoria").forEach(b => b.classList.toggle("on", b.dataset.f === cat));
@@ -270,7 +299,7 @@ if (!toque && !reduzir) {
   document.addEventListener("mouseout", e => { const c = e.target.closest("[data-tilt]"); if (c && !c.contains(e.relatedTarget)) c.style.transform = ""; });
   // Paralaxe suave no conteúdo do hero
   const hc = $("#heroConteudo");
-  addEventListener("scroll", () => { if (scrollY < innerHeight) hc.style.transform = `translateY(${scrollY * .18}px)`; }, { passive: true });
+  if (!livroAtivo) addEventListener("scroll", () => { if (scrollY < innerHeight) hc.style.transform = `translateY(${scrollY * .18}px)`; }, { passive: true });
 }
 
 /* ---------- App instalável (PWA) ---------- */
