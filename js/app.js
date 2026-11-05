@@ -15,111 +15,8 @@ const DIAS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
 const MESES = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
 const formatar = iso => { const d = new Date(iso + "T12:00:00"); return `${DIAS[d.getDay()]} · ${d.getDate()} ${MESES[d.getMonth()]}`; };
 const imagem = (n, extra = "") => n.f
-  ? `<img src="${n.f}" alt="${esc(n.t)}" loading="lazy" decoding="async" ${extra}>`
+  ? `<img src="${n.f.replace(".jpg", "-800.jpg")}" srcset="${n.f.replace(".jpg", "-800.jpg")} 800w, ${n.f} 1600w" sizes="(max-width: 640px) 92vw, 420px" alt="${esc(n.t)}" loading="lazy" decoding="async" ${extra}>`
   : `<div class="sem" data-cat="${esc(n.cat)}">${icone("calendario")}</div>`;
-
-/* ---------- Abertura ---------- */
-(() => {
-  const ab = $("#abertura");
-  let visto = false;
-  try { visto = sessionStorage.getItem("ac-visto") === "1"; sessionStorage.setItem("ac-visto", "1"); } catch (e) {}
-  const fechar = () => { ab.classList.add("sair"); document.body.classList.remove("sem-rolar"); };
-  if (visto || reduzir) { ab.style.transition = "none"; fechar(); return; }
-  document.body.classList.add("sem-rolar");
-  setTimeout(fechar, 1300);
-})();
-
-/* ---------- Livro: a capa vira com a rolagem ---------- */
-const hero = $("#inicio"), pagina = $("#pagina"), pagina2 = $("#pagina2");
-const livroAtivo = !reduzir;
-if (livroAtivo) document.body.classList.add("livro");
-const limitar = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-const suave = t => t * t * (3 - 2 * t);
-// As animações de entrada (CSS) têm de terminar antes de aplicarmos transformações por rolagem
-$$("[data-entrada], .hero-rodape").forEach(el => el.addEventListener("animationend", () => { el.style.animation = "none"; el.style.opacity = ""; }, { once: true }));
-
-// Elementos da capa que o vento leva, com o momento em que cada um começa a voar (0 a 1 da rolagem)
-const levados = livroAtivo ? [
-  { el: $(".topo-capa .topo-acoes"), s: .00, dy: -.35, r: 18 },
-  { el: $(".topo-capa .menu"), s: .03, dy: -.25, r: -10 },
-  { el: $(".script"), s: .02, dy: -.4, r: -22 },
-  { el: $(".hero h1"), s: .06, dy: -.3, r: 12 },
-  { el: $(".hero-sub"), s: .10, dy: -.2, r: -8 },
-  { el: $(".pesquisa"), s: .14, dy: -.15, r: 6 },
-  { el: $(".chips"), s: .18, dy: -.1, r: -5 },
-  { el: $(".hero-rodape"), s: .12, dy: -.2, r: 9 }
-].filter(x => x.el) : [];
-const frente = $(".frente"), heroFundo0 = $("#heroFundo"), logoCapa = $(".topo-capa .logo"), folhaLogo = $("#folhaLogo");
-
-function virarPagina() {
-  if (!livroAtivo) return;
-  const h = hero.offsetHeight || innerHeight, w = innerWidth;
-  const p = limitar(scrollY / h);
-  // Cada elemento é soprado para a direita e para cima, a rodar, com um pequeno ondular
-  levados.forEach(({ el, s, dy, r }) => {
-    const q = suave(limitar((p - s) / .55));
-    const x = q * w * 1.1, y = q * h * dy + Math.sin(q * Math.PI * 2) * 30 * (1 - q);
-    el.style.transform = q ? `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(q * r).toFixed(2)}deg)` : "";
-    el.style.opacity = q ? String(1 - suave(limitar((q - .55) / .45))) : "";
-  });
-  // O fundo desliza com o vento e a capa desvanece no fim, revelando a página seguinte
-  heroFundo0.style.transform = `translateX(${(p * w * .18).toFixed(1)}px) scale(${1 + p * .12})`;
-  frente.style.opacity = String(1 - suave(limitar((p - .5) / .45)));
-  // O logótipo encolhe e transforma-se numa folha que voa num arco até sair pelo canto superior direito
-  const q1 = suave(limitar(p / .18)), q2 = limitar((p - .06) / .8);
-  logoCapa.style.transform = `scale(${1 - q1 * .7}) rotate(${(q1 * -35).toFixed(1)}deg) translate(${q1 * 30}px, ${-q1 * 10}px)`;
-  logoCapa.style.opacity = String(1 - q1);
-  if (q2 > 0 && q2 < 1) {
-    const r0 = logoCapa.getBoundingClientRect(), hr = hero.getBoundingClientRect();
-    const x0 = r0.left + r0.width / 2 - hr.left, y0 = r0.top + r0.height / 2 - hr.top;
-    const x1 = w * 1.15, y1 = -h * .25, cx = w * .45, cy = h * .35; // curva do voo (Bézier)
-    const t = suave(q2), u = 1 - t;
-    const x = u * u * x0 + 2 * u * t * cx + t * t * x1, y = u * u * y0 + 2 * u * t * cy + t * t * y1 + Math.sin(t * Math.PI * 3) * 28;
-    const esc = .5 + Math.sin(t * Math.PI) * 1.2;
-    folhaLogo.style.transform = `translate(${(x - 32).toFixed(1)}px, ${(y - 32).toFixed(1)}px) rotate(${(t * 900).toFixed(1)}deg) scale(${esc.toFixed(3)})`;
-    folhaLogo.style.opacity = "1";
-  } else folhaLogo.style.opacity = "0";
-  vento.forca = p; vento.ligar(p < 1);
-  hero.style.visibility = p >= 1 ? "hidden" : "";
-  topo.classList.toggle("na-capa", p < .6); // o cabeçalho fixo só entra quando a capa já foi
-  return p;
-}
-
-/* ---------- Vento: folhas em canvas ---------- */
-const vento = (() => {
-  const c = $("#vento"); if (!c || !livroAtivo) return { forca: 0, ligar() {} };
-  const ctx = c.getContext("2d");
-  const CORES = ["#F2B705", "#FC3C3C", "#e07a1f", "#c9a227", "#1d3f9a", "#f0c94a", "#b83a2c"];
-  let W = 0, H = 0, folhas = [], ativo = false, raf = 0, t = 0;
-  const N = () => (innerWidth < 700 ? 26 : 48);
-  function nova(f = {}, inicio = false) {
-    const s = 6 + Math.random() * 12;
-    return Object.assign(f, { x: inicio ? Math.random() * W : -40 - Math.random() * W * .4, y: inicio ? Math.random() * H : H * (.1 + Math.random() * .9), s, cor: CORES[Math.random() * CORES.length | 0], rot: Math.random() * 6.3, vr: (Math.random() - .5) * .08, fase: Math.random() * 6.3, vel: .4 + Math.random() * .8, osc: 12 + Math.random() * 30, alfa: .55 + Math.random() * .45 });
-  }
-  function medir() { W = c.width = c.clientWidth; H = c.height = c.clientHeight; if (!folhas.length) folhas = Array.from({ length: N() }, () => nova({}, true)); }
-  function folha(f) {
-    ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.globalAlpha = f.alfa * (.3 + .7 * Math.min(1, api.forca * 3)); // em repouso as folhas são discretas ctx.fillStyle = f.cor;
-    ctx.beginPath(); ctx.moveTo(0, -f.s); ctx.quadraticCurveTo(f.s * .95, -f.s * .25, 0, f.s); ctx.quadraticCurveTo(-f.s * .95, -f.s * .25, 0, -f.s); ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -f.s * .8); ctx.lineTo(0, f.s * .8); ctx.stroke();
-    ctx.restore();
-  }
-  function passo() {
-    if (!ativo) return;
-    t += .016;
-    const rajada = .6 + api.forca * 22 * (1 + .3 * Math.sin(t * 1.7)); // o vento cresce com a rolagem
-    ctx.clearRect(0, 0, W, H);
-    for (const f of folhas) {
-      f.x += f.vel * rajada; f.y += Math.sin(t * 1.3 + f.fase) * .6 - api.forca * f.vel * 6; f.rot += f.vr + api.forca * .12;
-      if (f.x > W + 60 || f.y < -60 || f.y > H + 60) nova(f);
-      folha(f);
-    }
-    raf = requestAnimationFrame(passo);
-  }
-  const api = { forca: 0, ligar(sim) { if (sim && !ativo) { ativo = true; medir(); raf = requestAnimationFrame(passo); } if (!sim && ativo) { ativo = false; cancelAnimationFrame(raf); } } };
-  addEventListener("resize", () => { if (ativo) medir(); });
-  api.ligar(true);
-  return api;
-})();
 
 /* ---------- Barra de progresso e topo ---------- */
 const topo = $("#topo");
@@ -129,8 +26,7 @@ function aoRolar() {
   const y = scrollY;
   const total = document.documentElement.scrollHeight - innerHeight;
   progresso.style.transform = `scaleX(${total ? y / total : 0})`;
-  const p = virarPagina();
-  topo.classList.toggle("rolado", livroAtivo ? p > .3 : y > 40);
+  topo.classList.toggle("rolado", y > 40);
   // Esconde o topo ao descer, mostra ao subir (só depois do hero)
   topo.classList.toggle("esconder", y > innerHeight && y > ultimoY + 4);
   ultimoY = y;
@@ -157,7 +53,7 @@ function alternarMenu(abrir) {
   abrirMenu.setAttribute("aria-expanded", abrir);
   document.body.classList.toggle("sem-rolar", abrir);
 }
-$$("#abrirMenu, [data-abrir-menu]").forEach(b => b.addEventListener("click", () => alternarMenu(true)));
+abrirMenu.addEventListener("click", () => alternarMenu(true));
 $("#fecharMenu").addEventListener("click", () => alternarMenu(false));
 $$("#menuMovel a").forEach(a => a.addEventListener("click", () => alternarMenu(false)));
 addEventListener("keydown", e => { if (e.key === "Escape") { alternarMenu(false); folha.hidden = true; } });
@@ -251,7 +147,6 @@ function mostrar() {
 function posicaoDe(alvo) {
   if (alvo.id === "inicio") return 0;
   const cabecalho = topo.getBoundingClientRect().bottom - 28; // o topo fixo não deve tapar o título
-  if (livroAtivo && pagina2.contains(alvo)) return hero.offsetHeight + alvo.getBoundingClientRect().top - pagina2.getBoundingClientRect().top - cabecalho;
   return alvo.getBoundingClientRect().top + scrollY - cabecalho;
 }
 function irPara(id) { const alvo = $(id); if (alvo) scrollTo({ top: posicaoDe(alvo), behavior: reduzir ? "auto" : "smooth" }); }
@@ -374,7 +269,7 @@ if (!toque && !reduzir) {
   document.addEventListener("mouseout", e => { const c = e.target.closest("[data-tilt]"); if (c && !c.contains(e.relatedTarget)) c.style.transform = ""; });
   // Paralaxe suave no conteúdo do hero
   const hc = $("#heroConteudo");
-  if (!livroAtivo) addEventListener("scroll", () => { if (scrollY < innerHeight) hc.style.transform = `translateY(${scrollY * .18}px)`; }, { passive: true });
+  addEventListener("scroll", () => { if (scrollY < innerHeight) hc.style.transform = `translateY(${scrollY * .18}px)`; }, { passive: true });
 }
 
 /* ---------- App instalável (PWA) ---------- */
@@ -417,3 +312,69 @@ $("#fecharBarra").addEventListener("click", () => {
 });
 
 $("#ano").textContent = new Date().getFullYear();
+
+/* ---------- Abertura: o logótipo surge, o vento leva-o como folha e a página vira ---------- */
+(() => {
+  const ab = $("#abertura"), pag = $("#aberturaPagina"), logo = $("#aberturaLogo"), folha = $("#aberturaFolha"), c = $("#aberturaVento");
+  let vivo = true;
+  const saltar = $("#aberturaSaltar");
+  const terminar = () => { vivo = false; document.body.classList.add("revelado"); document.body.classList.remove("sem-rolar"); ab.remove(); };
+  if (reduzir) { terminar(); return; }
+  document.body.classList.add("sem-rolar");
+  requestAnimationFrame(() => ab.classList.add("pronta"));
+
+  // Folhas em canvas (vento cresce com `forca`)
+  const ctx = c.getContext("2d"), CORES = ["#F2B705", "#FC3C3C", "#e07a1f", "#c9a227", "#1d3f9a", "#f0c94a", "#b83a2c"];
+  let W = c.width = c.clientWidth, H = c.height = c.clientHeight, forca = 0, t = 0;
+  const nova = (f = {}, inicio = false) => Object.assign(f, { x: inicio ? Math.random() * W : -40 - Math.random() * W * .3, y: inicio ? Math.random() * H : H * (.15 + Math.random() * .85), s: 5 + Math.random() * 11, cor: CORES[Math.random() * CORES.length | 0], rot: Math.random() * 6.3, vr: (Math.random() - .5) * .1, fase: Math.random() * 6.3, vel: .5 + Math.random() * .9, alfa: .6 + Math.random() * .4 });
+  const folhas = Array.from({ length: innerWidth < 700 ? 30 : 60 }, () => nova({}, true));
+  (function passo() {
+    if (!vivo) return;
+    t += .016;
+    const rajada = .25 + forca * 26 * (1 + .3 * Math.sin(t * 2.1));
+    ctx.clearRect(0, 0, W, H);
+    for (const f of folhas) {
+      f.x += f.vel * rajada; f.y += Math.sin(t * 1.4 + f.fase) * .5 - forca * f.vel * 5; f.rot += f.vr + forca * .14;
+      if (f.x > W + 60 || f.y < -60) nova(f);
+      ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.globalAlpha = f.alfa * (.25 + .75 * Math.min(1, forca * 2.5)); ctx.fillStyle = f.cor;
+      ctx.beginPath(); ctx.moveTo(0, -f.s); ctx.quadraticCurveTo(f.s * .95, -f.s * .25, 0, f.s); ctx.quadraticCurveTo(-f.s * .95, -f.s * .25, 0, -f.s); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -f.s * .8); ctx.lineTo(0, f.s * .8); ctx.stroke(); ctx.restore();
+    }
+    requestAnimationFrame(passo);
+  })();
+
+  const curva = t => t * t * (3 - 2 * t);
+  const inicio = performance.now();
+  // Guião (em ms): 0–900 logótipo entra · 900–1500 vento cresce e o logótipo estremece · 1500–2700 vira folha e voa · 2300–3500 a página vira · 3500 fim
+  const ETAPAS = { entrada: [0, 900], vento: [900, 1600], folha: [1500, 2700], virar: [2300, 3500] };
+  const fase = (nome, agora) => Math.min(1, Math.max(0, (agora - ETAPAS[nome][0]) / (ETAPAS[nome][1] - ETAPAS[nome][0])));
+  let saltado = false;
+  function quadro(agora) {
+    const ms = saltado ? 9999 : agora - inicio;
+    const e = curva(fase("entrada", ms)), v = fase("vento", ms), fo = fase("folha", ms), vi = curva(fase("virar", ms));
+    forca = Math.max(v, fo > 0 ? 1 : 0) * (1 - vi * .7);
+    // 1) entrada do logótipo
+    const tremor = v > 0 && fo === 0 ? Math.sin(ms / 38) * 2.2 * v : 0;
+    const enc = curva(Math.min(1, fo / .35)); // 2) encolhe e roda enquanto a folha nasce
+    logo.style.opacity = String(e * (1 - enc));
+    logo.style.transform = `scale(${(.82 + .18 * e) * (1 - enc * .6)}) rotate(${(tremor + enc * -28).toFixed(2)}deg) translate(${enc * 40}px, ${-enc * 18}px)`;
+    // 3) a folha voa em arco até sair pelo canto superior direito
+    if (fo > 0 && fo < 1) {
+      const r = logo.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top + r.height / 2;
+      const x1 = W * 1.2, y1 = -H * .3, cx = W * .55, cy = H * .25, tt = curva(fo), u = 1 - tt;
+      const x = u * u * x0 + 2 * u * tt * cx + tt * tt * x1, y = u * u * y0 + 2 * u * tt * cy + tt * tt * y1 + Math.sin(tt * Math.PI * 3) * 34;
+      folha.style.transform = `translate(${(x - 36).toFixed(1)}px, ${(y - 36).toFixed(1)}px) rotate(${(tt * 1000).toFixed(1)}deg) scale(${(.4 + Math.sin(tt * Math.PI) * 1.4 + tt * .2).toFixed(3)})`;
+      folha.style.opacity = "1";
+    } else folha.style.opacity = "0";
+    // 4) a página vira sobre a lombada e revela o site
+    pag.style.transform = `rotateY(${(-vi * 180).toFixed(2)}deg) rotateX(${(-Math.sin(vi * Math.PI) * 4).toFixed(2)}deg)`;
+    pag.style.setProperty("--dobra", Math.sin(vi * Math.PI).toFixed(3));
+    if (vi > 0) { document.body.classList.add("revelado"); c.style.opacity = String(1 - vi * vi); saltar.style.opacity = "0"; }
+    if (ms >= ETAPAS.virar[1]) { vivo = false; terminar(); return; }
+    requestAnimationFrame(quadro);
+  }
+  requestAnimationFrame(quadro);
+  saltar.addEventListener("click", () => { saltado = true; });
+  setTimeout(() => { if (vivo) terminar(); }, ETAPAS.virar[1] + 400); // garantia: termina mesmo que o separador esteja em segundo plano
+  addEventListener("resize", () => { W = c.width = c.clientWidth; H = c.height = c.clientHeight; }, { once: true });
+})();

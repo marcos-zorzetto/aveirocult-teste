@@ -10,7 +10,9 @@
   <meta property="og:locale" content="pt_PT">
   <meta property="og:title" content="Aveiro Cult · O que fazer no distrito de Aveiro">
   <meta property="og:description" content="Agenda cultural, eventos e notícias dos 19 concelhos do distrito de Aveiro. Site e app num só lugar.">
-  <meta property="og:image" content="https://aveirocult.com/wp-content/uploads/2020/09/tax_aveiro.jpg">
+  <meta property="og:image" content="https://marcos-zorzetto.github.io/aveirocult-teste/img/partilha.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icones/icone-192.png">
@@ -21,7 +23,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=4">
+  <link rel="stylesheet" href="css/estilo.css?v=5">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://aveirocult.com/wp-content/uploads/2020/09/Logo-novo-AveiroCult-2100-x-2100-px_20260314_013201_0000.png"}}</script>
 </head>
 <body>
 
@@ -54,9 +57,23 @@
 </svg>
 
 <!-- Abertura -->
+<!-- Abertura: o logótipo surge, o vento leva-o como uma folha e a página vira para revelar o site -->
 <div class="abertura" id="abertura" aria-hidden="true">
-  <div class="abertura-marca"><span class="a">Aveiro</span><span class="c">Cult</span></div>
-  <div class="abertura-linha"><i></i></div>
+  <div class="abertura-pagina" id="aberturaPagina">
+    <div class="abertura-frente">
+      <img class="abertura-logo" id="aberturaLogo" src="img/marca.png" alt="" width="600" height="600">
+      <p class="abertura-nota" id="aberturaNota">Agenda cultural do distrito de Aveiro</p>
+      <span class="abertura-dobra"></span>
+    </div>
+    <div class="abertura-verso"></div>
+  </div>
+  <canvas class="abertura-vento" id="aberturaVento"></canvas>
+  <svg class="abertura-folha" id="aberturaFolha" viewBox="0 0 100 100">
+    <defs><linearGradient id="gFolha" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1d3f9a"/><stop offset=".55" stop-color="#F2B705"/><stop offset="1" stop-color="#FC3C3C"/></linearGradient></defs>
+    <path d="M50 4 C 88 22, 96 66, 50 96 C 4 66, 12 22, 50 4 Z" fill="url(#gFolha)"/>
+    <path d="M50 12 V 88 M50 38 C 60 34, 68 28, 75 22 M50 58 C 62 54, 71 47, 79 39 M50 38 C 40 34, 32 28, 25 22 M50 58 C 38 54, 29 47, 21 39" stroke="rgba(255,255,255,.6)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  </svg>
+  <button class="abertura-saltar" id="aberturaSaltar" type="button">Saltar</button>
 </div>
 
 <div class="progresso" id="progresso"></div>
@@ -109,26 +126,8 @@
 
 <main>
 
-<!-- LIVRO: a capa (hero) vira como uma página e revela a página seguinte -->
-<div class="livro" id="livro">
-
-<!-- HERO / capa -->
+<!-- HERO -->
 <section class="hero" id="inicio">
-<div class="pagina" id="pagina">
-<div class="frente">
-  <!-- Cabeçalho da capa: faz parte da página e vira com ela -->
-  <div class="topo-capa">
-    <div class="caixa topo-in">
-      <a class="logo" href="#inicio" aria-label="Aveiro Cult, início"><span class="logo-marca"><span class="a">Aveiro</span><span class="c">Cult</span></span></a>
-      <nav class="menu" aria-label="Capa">
-        <a href="#inicio" data-nav>Início</a><a href="#destaques" data-nav>Destaques</a><a href="#agenda" data-nav>Agenda</a><a href="#noticias" data-nav>Notícias</a><a href="#explorar" data-nav>Concelhos</a><a href="#comunidade" data-nav>Comunidade</a>
-      </nav>
-      <div class="topo-acoes">
-        <button class="btn btn-contorno" data-instalar data-magnetico><svg><use href="#i-download"/></svg>Instalar app</button>
-        <button class="hamburguer" data-abrir-menu aria-label="Abrir menu"><svg><use href="#i-menu"/></svg></button>
-      </div>
-    </div>
-  </div>
   <div class="hero-fundo" id="heroFundo"></div>
   <div class="hero-veu"></div>
   <div class="caixa hero-in">
@@ -173,20 +172,7 @@
       </div>
     </div>
   </div>
-</div>
-</div>
-<!-- Vento: folhas a atravessar a capa, e o logótipo que se transforma numa folha -->
-<canvas class="vento" id="vento" aria-hidden="true"></canvas>
-<svg class="folha-logo" id="folhaLogo" viewBox="0 0 100 100" aria-hidden="true">
-  <defs><linearGradient id="gFolha" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1d3f9a"/><stop offset=".55" stop-color="#F2B705"/><stop offset="1" stop-color="#FC3C3C"/></linearGradient></defs>
-  <path d="M50 4 C 88 22, 96 66, 50 96 C 4 66, 12 22, 50 4 Z" fill="url(#gFolha)"/>
-  <path d="M50 12 V 88 M50 38 C 60 34, 68 28, 75 22 M50 58 C 62 54, 71 47, 79 39 M50 38 C 40 34, 32 28, 25 22 M50 58 C 38 54, 29 47, 21 39" stroke="rgba(255,255,255,.6)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-</svg>
 </section>
-
-<!-- Página seguinte (fica por baixo da capa enquanto ela vira) -->
-<div class="pagina-2" id="pagina2">
-<div class="sombra-pagina"></div>
 
 <!-- Ticker -->
 <div class="ticker" aria-hidden="true">
@@ -219,10 +205,6 @@
   </div>
   <div class="caixa"><div class="pontos" id="destPontos"></div></div>
 </section>
-
-</div><!-- /pagina-2 -->
-<div class="pista" aria-hidden="true"></div>
-</div><!-- /livro -->
 
 <!-- Agenda -->
 <section class="bloco agenda-sec" id="agenda">
@@ -394,7 +376,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/dados.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/dados.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>
