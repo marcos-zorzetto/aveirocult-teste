@@ -150,7 +150,7 @@ function mostrar() {
   vazio.hidden = todas.length > 0;
   const filtros = [estado.termo && `“${estado.termo}”`, estado.cat, estado.concelho].filter(Boolean).join(" · ");
   resultado.textContent = filtros ? `${todas.length} ${todas.length === 1 ? "resultado" : "resultados"} para ${filtros}` : `${NOTICIAS.length} notícias`;
-  const mais = $("#noticiasMais"); if (mais) { mais.hidden = todas.length <= noticiasVisiveis; mais.textContent = `Ver mais ${Math.min(POR_PAGINA, todas.length - noticiasVisiveis)} notícias`; }
+  const mais = $("#noticiasMais"); if (mais) { mais.hidden = todas.length <= noticiasVisiveis; const n = Math.min(POR_PAGINA, todas.length - noticiasVisiveis); mais.textContent = n === 1 ? "Ver mais 1 notícia" : `Ver mais ${n} notícias`; }
   observarReveal($$("#lista .noticia"));
   mostrarAgenda();
 }
@@ -179,7 +179,7 @@ function mostrarAgenda() {
     </li>`;
   }).join("");
   $("#agendaVazio").hidden = todos.length > 0;
-  const mais = $("#agendaMais"); mais.hidden = agendaTudo || todos.length <= 10; mais.textContent = `Ver mais ${todos.length - 10} eventos`;
+  const mais = $("#agendaMais"); mais.hidden = agendaTudo || todos.length <= 10; mais.textContent = todos.length - 10 === 1 ? "Ver mais 1 evento" : `Ver mais ${todos.length - 10} eventos`;
   const filtros = [estado.termo && `“${estado.termo}”`, estado.cat, estado.concelho, estado.tag && "#" + estado.tag].filter(Boolean).join(" · ");
   $("#agendaResultado").textContent = filtros ? `${todos.length} ${todos.length === 1 ? "evento" : "eventos"} para ${filtros}` : `${EVENTOS.length} eventos aprovados nos próximos meses`;
   observarReveal($$("#agendaLista li"));

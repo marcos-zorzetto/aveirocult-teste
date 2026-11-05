@@ -9,9 +9,10 @@
 .pg-voltar { display: inline-flex; align-items: center; gap: 8px; color: var(--cinza); font-size: 14px; margin-bottom: 26px; }
 .pg-voltar svg { width: 16px; height: 16px; transform: scaleX(-1); }
 .pg-voltar:hover { color: var(--primaria); }
-.pg-figura { margin: 0 0 30px; border-radius: 24px; overflow: hidden; background: var(--creme); aspect-ratio: 16 / 9; }
-.pg-figura img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pg-figura.pg-retrato { aspect-ratio: 1; width: min(360px, 100%); border-radius: 50%; }
+.pg-figura { margin: 0 0 30px; border-radius: 24px; overflow: hidden; background: var(--creme); aspect-ratio: 16 / 9; position: relative; }
+.pg-figura img { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; }
+.pg-figura.pg-retrato { aspect-ratio: 1; width: min(360px, 100%); border-radius: 28px; } /* quadrado arredondado: logótipos não ficam cortados como num círculo */
+.pg-figura.contem { aspect-ratio: 4 / 3; } /* cartazes ao alto ganham mais altura (js/imagens.js) */
 .pg h1 { font-size: clamp(32px, 5vw, 56px); line-height: 1.02; letter-spacing: -.03em; margin: 6px 0 22px; }
 .pg-meta { list-style: none; display: flex; flex-wrap: wrap; gap: 10px 24px; margin-bottom: 26px; color: var(--tinta-2); font-size: 15.5px; }
 .pg-meta li { display: inline-flex; align-items: center; gap: 8px; }
@@ -32,4 +33,4 @@
 .pg-vazio p { color: var(--cinza); margin-bottom: 24px; }
 .rodape .direitos a { color: var(--cinza); }
 @media (max-width: 900px) { .btn-topo { display: none; } }
-@media (max-width: 640px) { .pg-in { width: min(820px, 100% - 32px); } .pg-figura { border-radius: 18px; } .pg-acoes .btn { width: 100%; justify-content: center; } }
+@media (max-width: 640px) { .pg-in { width: min(820px, 100% - 32px); } .pg-figura { border-radius: 18px; } .pg-figura.contem { aspect-ratio: 1; } .pg-acoes .btn { width: 100%; justify-content: center; } }
