@@ -119,6 +119,7 @@ $("#ticker").innerHTML = [...itensTicker, ...itensTicker].map(t => `<span>${esc(
 const estado = { termo: "", cat: "", concelho: "", tag: "" };
 let EVENTOS = [], agendaTudo = false; // eventos aprovados vindos da base de dados (preenchido mais abaixo)
 const lista = $("#lista"), vazio = $("#vazio"), resultado = $("#resultado");
+const POR_PAGINA = 12; let noticiasVisiveis = POR_PAGINA; // a grelha tem 3 colunas: 12 fecha sempre a linha
 const selConcelho = $("#filtroConcelho");
 CONCELHOS.forEach(c => selConcelho.add(new Option(c, c)));
 
@@ -137,7 +138,7 @@ function filtrar() {
     (!q || normalizar(n.t + " " + n.ex + " " + n.onde + " " + n.cat).includes(q)));
 }
 function mostrar() {
-  const itens = filtrar();
+  const todas = filtrar(), itens = todas.slice(0, noticiasVisiveis);
   lista.innerHTML = itens.map((n, i) => `
     <a class="noticia" href="${esc(n.l)}"${n.interno ? "" : ' target="_blank" rel="noopener"'} style="--i:${i % 6}">
       <div class="img">${imagem(n)}</div>
@@ -146,9 +147,10 @@ function mostrar() {
       <p>${realcar(n.ex)}</p>
       <span class="ler">${n.interno ? "Ler notícia" : "Ler no site"} ${icone("seta")}</span>
     </a>`).join("");
-  vazio.hidden = itens.length > 0;
+  vazio.hidden = todas.length > 0;
   const filtros = [estado.termo && `“${estado.termo}”`, estado.cat, estado.concelho].filter(Boolean).join(" · ");
-  resultado.textContent = filtros ? `${itens.length} ${itens.length === 1 ? "resultado" : "resultados"} para ${filtros}` : `${NOTICIAS.length} notícias`;
+  resultado.textContent = filtros ? `${todas.length} ${todas.length === 1 ? "resultado" : "resultados"} para ${filtros}` : `${NOTICIAS.length} notícias`;
+  const mais = $("#noticiasMais"); if (mais) { mais.hidden = todas.length <= noticiasVisiveis; mais.textContent = `Ver mais ${Math.min(POR_PAGINA, todas.length - noticiasVisiveis)} notícias`; }
   observarReveal($$("#lista .noticia"));
   mostrarAgenda();
 }
@@ -190,9 +192,10 @@ function mostrarTags() {
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-tag]"); if (!b) return;
   e.preventDefault(); e.stopPropagation();
-  estado.tag = estado.tag === b.dataset.tag ? "" : b.dataset.tag; agendaTudo = false; marcarTag(); mostrarAgenda(); irPara("#agenda");
+  estado.tag = estado.tag === b.dataset.tag ? "" : b.dataset.tag; agendaTudo = false; noticiasVisiveis = POR_PAGINA; marcarTag(); mostrarAgenda(); irPara("#agenda");
 }, true);
 $("#agendaMais")?.addEventListener("click", () => { agendaTudo = true; mostrarAgenda(); });
+$("#noticiasMais")?.addEventListener("click", () => { noticiasVisiveis += POR_PAGINA; mostrar(); });
 function posicaoDe(alvo) {
   if (alvo.id === "inicio") return 0;
   const cabecalho = topo.getBoundingClientRect().bottom - 28; // o topo fixo não deve tapar o título
@@ -211,26 +214,26 @@ function marcarCategoria(cat) {
 $("#pesquisa").addEventListener("submit", e => {
   e.preventDefault();
   estado.termo = $("#termo").value.trim();
-  estado.concelho = selConcelho.value; agendaTudo = false;
+  estado.concelho = selConcelho.value; agendaTudo = false; noticiasVisiveis = POR_PAGINA;
   mostrar(); irPara("#agenda");
 });
 $("#termo").addEventListener("input", e => { estado.termo = e.target.value.trim(); mostrar(); });
 selConcelho.addEventListener("change", () => { estado.concelho = selConcelho.value; marcarConcelho(); mostrar(); });
-$$("#chips button").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; agendaTudo = false; marcarCategoria(estado.cat); mostrar(); irPara("#agenda"); }));
+$$("#chips button").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; agendaTudo = false; noticiasVisiveis = POR_PAGINA; marcarCategoria(estado.cat); mostrar(); irPara("#agenda"); }));
 
 // Categorias (cartões)
 $("#categorias").innerHTML = CATEGORIAS.map((c, i) => `
   <button type="button" class="categoria${c.f === "" ? " on" : ""}" data-f="${esc(c.f)}" data-reveal style="--i:${i}">
     <span class="icone">${icone(c.i)}</span>${esc(c.n)}
   </button>`).join("");
-$$("#categorias .categoria").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; agendaTudo = false; marcarCategoria(estado.cat); mostrar(); irPara("#agenda"); }));
+$$("#categorias .categoria").forEach(b => b.addEventListener("click", () => { estado.cat = b.dataset.f; agendaTudo = false; noticiasVisiveis = POR_PAGINA; marcarCategoria(estado.cat); mostrar(); irPara("#agenda"); }));
 
 // Concelhos (chips)
 $("#concelhos").innerHTML = CONCELHOS.map((c, i) => `<button type="button" class="concelho" data-c="${esc(c)}" style="--i:${i}"><i></i>${esc(c)}</button>`).join("");
 function marcarConcelho() { $$("#concelhos .concelho").forEach(b => b.classList.toggle("on", b.dataset.c === estado.concelho)); }
 $$("#concelhos .concelho").forEach(b => b.addEventListener("click", () => {
   estado.concelho = b.classList.contains("on") ? "" : b.dataset.c;
-  selConcelho.value = estado.concelho; agendaTudo = false; marcarConcelho(); mostrar(); irPara("#agenda");
+  selConcelho.value = estado.concelho; agendaTudo = false; noticiasVisiveis = POR_PAGINA; marcarConcelho(); mostrar(); irPara("#agenda");
 }));
 
 /* ---------- Destaques (carrossel) ---------- */

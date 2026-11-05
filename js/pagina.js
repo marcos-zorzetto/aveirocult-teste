@@ -38,6 +38,7 @@ function meta(titulo, descricao, imagem) {
   set('meta[property="og:description"]', "content", descricao);
   if (imagem) set('meta[property="og:image"]', "content", imagem.startsWith("http") ? imagem : BASE + imagem);
   set('link[rel="canonical"]', "href", location.href.replace(/#.*$/, ""));
+  set('meta[property="og:url"]', "content", location.href.replace(/#.*$/, ""));
 }
 
 function ld(obj) { const s = document.createElement("script"); s.type = "application/ld+json"; s.textContent = JSON.stringify(obj); document.head.appendChild(s); }

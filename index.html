@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#0f0f14">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_PT">
+  <meta property="og:url" content="https://marcos-zorzetto.github.io/aveirocult-teste/">
   <meta property="og:title" content="Aveiro Cult · O que fazer no distrito de Aveiro">
   <meta property="og:description" content="Agenda cultural, eventos e notícias dos 19 concelhos do distrito de Aveiro. Site e app num só lugar.">
   <meta property="og:image" content="https://marcos-zorzetto.github.io/aveirocult-teste/img/partilha.jpg">
@@ -26,10 +27,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=18">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://aveirocult.com/wp-content/uploads/2020/09/Logo-novo-AveiroCult-2100-x-2100-px_20260314_013201_0000.png"}}</script>
+  <link rel="stylesheet" href="css/estilo.css?v=19">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://marcos-zorzetto.github.io/aveirocult-teste/icones/icone-512.png"}}</script>
 </head>
 <body>
+<a class="saltar-conteudo" href="#conteudo">Saltar para o conteúdo</a>
 
 <!-- Ícones reutilizáveis -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -129,7 +131,7 @@
   </div>
 </div>
 
-<main>
+<main id="conteudo">
 
 <!-- HERO -->
 <section class="hero" id="inicio">
@@ -139,7 +141,7 @@
     <div class="hero-conteudo" id="heroConteudo">
       <p class="script" data-entrada style="--i:0">Explore</p>
       <h1 data-entrada style="--i:1">
-        <span class="roda" id="rodaPalavra" aria-live="polite"><span>Aveiro</span></span>
+        <span class="so-leitor">Agenda cultural do distrito de </span><span class="roda" id="rodaPalavra" aria-live="polite"><span>Aveiro</span></span>
       </h1>
       <p class="hero-sub" data-entrada style="--i:2">Concertos, teatro, mercados, gastronomia e tudo o que acontece nos 19 concelhos do distrito. Num só lugar, no site e na app.</p>
 
@@ -235,12 +237,13 @@
     <div class="titulo-sec" data-reveal>
       <div>
         <p class="sobre-titulo">Atualizado todos os dias</p>
-        <h2>Notícias culturais <em>do distrito</em></h2>
+        <h2>Notícias <em>do distrito</em></h2>
       </div>
       <p class="resultado" id="resultado"></p>
     </div>
     <div class="grelha" id="lista"></div>
     <p class="vazio" id="vazio" hidden>Não encontrámos nada com essa pesquisa. Experimenta outra palavra ou escolhe “Tudo”.</p>
+    <div class="agenda-pe"><button class="btn btn-escuro" id="noticiasMais" type="button" hidden>Ver mais notícias</button></div>
   </div>
 </section>
 
@@ -494,7 +497,8 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/dados.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<script src="js/dados.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
+<script src="js/analytics.js?v=1"></script>
 </body>
 </html>
