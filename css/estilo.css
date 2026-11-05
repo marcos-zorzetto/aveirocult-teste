@@ -346,7 +346,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .concelho i { width: 8px; height: 8px; border-radius: 50%; background: var(--amarelo); }
 
 /* ---------- Comunidade ---------- */
-.comunidade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.comunidade { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .cartao-com { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 30px 28px; border-radius: 24px; background: var(--creme); overflow: hidden; transition: transform .5s var(--suave), box-shadow .5s; }
 .cartao-com::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,47,163,.14), rgba(255,222,4,.12)); opacity: 0; transition: opacity .4s; }
 .cartao-com:hover { transform: translateY(-8px); box-shadow: var(--sombra-forte); }
@@ -355,9 +355,15 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .cartao-com .icone { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; background: var(--primaria); color: #fff; margin-bottom: 12px; transition: transform .4s var(--suave); }
 .cartao-com .icone.verde { background: #25a35a; }
 .cartao-com .icone.rosa { background: linear-gradient(135deg, #f0356b, #ff8a3d); }
+.cartao-com .icone.spotify { background: #1db954; }
+.cartao-com .ligacoes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 4px; }
+.cartao-com .ligacoes em { margin-top: 0; }
+.cartao-com .ligacoes .secundaria { font-size: 14px; font-weight: 500; color: var(--tinta-2); text-decoration: underline; text-underline-offset: 3px; }
+.cartao-com .ligacoes .secundaria:hover { color: var(--primaria); }
 .cartao-com:hover .icone { transform: rotate(-8deg) scale(1.08); }
 .cartao-com .icone svg { width: 26px; height: 26px; }
-.cartao-com b { font-family: var(--titulo); font-size: 20px; }
+.cartao-com b { font-family: var(--titulo); font-size: 20px; overflow-wrap: anywhere; }
+.cartao-com > span:not(.icone) { overflow-wrap: anywhere; }
 .cartao-com > span:not(.icone) { color: var(--cinza); font-size: 15px; }
 .cartao-com em { font-style: normal; font-weight: 600; color: var(--primaria); display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; }
 .cartao-com:hover em svg { transform: translateX(4px); }
@@ -404,6 +410,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 
 /* ---------- Responsivo ---------- */
 @media (max-width: 1100px) {
+  .comunidade { grid-template-columns: 1fr 1fr; }
   .categorias { grid-template-columns: repeat(4, 1fr); }
   .grelha { grid-template-columns: repeat(2, 1fr); }
 }

@@ -7,7 +7,7 @@ def ler(q):
     r = urllib.request.Request(f"{URL}/rest/v1/{q}", headers={"apikey": CHAVE, "Authorization": f"Bearer {CHAVE}"})
     return json.load(urllib.request.urlopen(r, timeout=60))
 hoje = datetime.date.today().isoformat()
-linhas = [("", "1.0", "daily", hoje), ("empresas.html", "0.6", "monthly", hoje), ("privacidade.html", "0.2", "yearly", hoje)]
+linhas = [("", "1.0", "daily", hoje), ("empresas.html", "0.6", "monthly", hoje), ("sobre.html", "0.6", "monthly", hoje), ("privacidade.html", "0.2", "yearly", hoje)]
 for n in ler("noticias?select=slug,id,data,atualizado_em&publicado=is.true&order=data.desc"):
     linhas.append((f"noticia.html?n={n['slug'] or n['id']}", "0.7", "monthly", (n.get("atualizado_em") or n["data"])[:10]))
 for e in ler(f"eventos_publicos?select=id,data,criado_em&data=gte.{hoje}&order=data.asc"):
