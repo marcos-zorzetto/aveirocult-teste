@@ -565,7 +565,8 @@ const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac
   let vivo = true;
   const saltar = $("#aberturaSaltar");
   const terminar = () => { vivo = false; document.body.classList.add("revelado"); document.body.classList.remove("sem-rolar"); ab.remove(); };
-  if (reduzir) { terminar(); return; }
+  // Quem chega por um link para uma secção (ex.: "Nova publicação" → #divulgar) vai direto, sem abertura
+  if (reduzir || alvoDoLink()) { terminar(); return; }
   document.body.classList.add("sem-rolar");
   requestAnimationFrame(() => ab.classList.add("pronta"));
 
@@ -623,4 +624,26 @@ const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac
   saltar.addEventListener("click", () => { saltado = true; });
   setTimeout(() => { if (vivo) terminar(); }, ETAPAS.virar[1] + 400); // garantia: termina mesmo que o separador esteja em segundo plano
   addEventListener("resize", () => { W = c.width = c.clientWidth; H = c.height = c.clientHeight; }, { once: true });
+})();
+
+/* ---------- Chegar a uma secção por link (ex.: conta.html → ./#divulgar) ----------
+   A agenda, os artistas e as imagens carregam depois de a página abrir e empurram as secções para baixo,
+   por isso o navegador deixava a pessoa a meio de outra secção. Durante uns segundos voltamos a alinhar
+   a secção sempre que a página cresce, e paramos logo que a pessoa role ou toque em alguma coisa. */
+function alvoDoLink() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  return id && !/[=&]/.test(id) ? document.getElementById(id) : null;
+}
+(() => {
+  const alvo = alvoDoLink();
+  if (!alvo || !("ResizeObserver" in window)) return;
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  let ativo = true;
+  const alinhar = () => { if (ativo) scrollTo({ top: alvo.getBoundingClientRect().top + scrollY, behavior: "instant" }); }; // "instant": sem a animação suave do CSS
+  const ro = new ResizeObserver(alinhar);
+  const parar = () => { ativo = false; ro.disconnect(); };
+  ro.observe(document.body);
+  for (const ev of ["wheel", "touchstart", "keydown", "pointerdown"]) addEventListener(ev, parar, { once: true, passive: true });
+  setTimeout(parar, 6000);
+  alinhar();
 })();
