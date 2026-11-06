@@ -50,3 +50,9 @@
   .pub-img { width: 60px; height: 60px; }
 }
 .conta .grupo + .grupo { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* Página "Publicar" (publicar.html): o formulário numa página própria, sobre fundo creme */
+.pagina-interna.publicar, .publicar .pg.divulgar-sec { background: var(--creme); }
+.publicar .pg h1 { font-size: clamp(30px, 4.4vw, 52px); margin-bottom: 0; }
+.publicar .pg h1 em { font-style: normal; color: var(--primaria); }
+.publicar .titulo-nota { max-width: 380px; }

@@ -198,7 +198,7 @@ function linhaAssinatura(i) {
   return emDia(c) ? `<p class="assin ok">✓ Assinatura em dia até ${dataPt(c.assinatura_ate)} · ${quem}</p>`
     : `<p class="assin atraso">⚠ ${c.assinatura_ate ? "Assinatura terminou a " + dataPt(c.assinatura_ate) : "Sem assinatura registada"} · ${quem} <button class="ligacao" data-ir-cliente="${esc(c.id)}">ver cliente</button></p>`;
 }
-const linhaAviso = i => i.aviso_estado && i.aviso_estado === i.estado ? `<span class="avisado">✉ cliente avisado ${dataPt(i.aviso_em)}</span>` : "";
+const linhaAviso = i => i.estado !== "pendente" && i.aviso_estado && i.aviso_estado === i.estado ? `<span class="avisado">✉ cliente avisado ${dataPt(i.aviso_em)}</span>` : "";
 // Envia ao cliente o email de "publicado" ou "não publicado" (função "notificar" no Supabase)
 async function notificar(id) {
   try {

@@ -106,7 +106,7 @@
       <a href="#agenda" data-nav>Agenda</a>
       <a href="#noticias" data-nav>Notícias</a>
       <a href="#explorar" data-nav>Concelhos</a>
-      <a href="#divulgar" data-nav>Divulgar</a>
+      <a href="publicar.html">Divulgar</a>
       <a href="#comunidade" data-nav>Comunidade</a>
     </nav>
     <div class="topo-acoes">
@@ -127,9 +127,10 @@
     <a href="#noticias" style="--i:3">Notícias</a>
     <a href="#explorar" style="--i:4">Concelhos</a>
     <a href="#comunidade" style="--i:5">Comunidade</a>
-    <a href="conta.html" style="--i:6">A minha conta</a>
+    <a href="publicar.html" style="--i:6">Publicar</a>
+    <a href="conta.html" style="--i:7">A minha conta</a>
   </nav>
-  <div class="menu-movel-pe" style="--i:7">
+  <div class="menu-movel-pe" style="--i:8">
     <button class="btn btn-primario btn-largo" data-instalar><svg><use href="#i-download"/></svg>Instalar a app</button>
     <p>Agenda cultural dos 19 concelhos do distrito de Aveiro.</p>
   </div>
@@ -226,7 +227,7 @@
         <h2>Próximos eventos <em>em Aveiro e no distrito</em></h2>
         <p class="resultado" id="agendaResultado"></p>
       </div>
-      <a class="ver" href="#divulgar">Divulgar um evento <svg><use href="#i-seta"/></svg></a>
+      <a class="ver" href="publicar.html">Divulgar um evento <svg><use href="#i-seta"/></svg></a>
     </div>
     <div class="agenda-tags" id="agendaTags" data-reveal></div>
     <ol class="agenda" id="agendaLista"></ol>
@@ -336,13 +337,13 @@
         <p class="sobre-titulo">Quem faz a cultura</p>
         <h2>Artistas e promotores <em>do distrito de Aveiro</em></h2>
       </div>
-      <a class="ver" href="#divulgar">Cria o teu portfólio <svg><use href="#i-seta"/></svg></a>
+      <a class="ver" href="publicar.html">Cria o teu portfólio <svg><use href="#i-seta"/></svg></a>
     </div>
     <div class="artistas" id="artistasLista"></div>
   </div>
 </section>
 
-<!-- Divulgar: eventos e artistas enviados pelo público -->
+<!-- Divulgar: convite para publicar (o formulário está em publicar.html) -->
 <section class="bloco divulgar-sec" id="divulgar">
   <div class="caixa">
     <div class="titulo-sec" data-reveal>
@@ -350,7 +351,7 @@
         <p class="sobre-titulo">Publica tu mesmo</p>
         <h2>Divulga o teu <em>evento</em> ou o teu trabalho</h2>
       </div>
-      <p class="titulo-nota">Preenche, envia e, depois de uma revisão rápida, aparece no site e na app.</p>
+      <p class="titulo-nota">Depois de uma revisão rápida, aparece no site e na app.</p>
     </div>
 
     <div class="divulgar-in" data-reveal>
@@ -363,87 +364,14 @@
         <p class="divulgar-nota">Para associações, câmaras, espaços, produtores, coletivos e artistas do distrito. Acompanha tudo em <a href="conta.html">A minha conta</a>.</p>
       </aside>
 
-      <div class="formulario porta-conta" id="portaConta" hidden>
-        <span class="form-ok-icone"><svg><use href="#i-pessoa"/></svg></span>
-        <h3>Entra para publicar</h3>
-        <p>Para divulgar precisas de uma conta no Aveiro Cult. Cria-a num minuto, sem esperar por aprovação, e acompanha cada publicação em <b>A minha conta</b>.</p>
+      <div class="formulario porta-conta convite-publicar">
+        <span class="form-ok-icone"><svg><use href="#i-mais"/></svg></span>
+        <h3>Publica em poucos minutos</h3>
+        <p>Cria a tua conta, sem esperar por aprovação, e preenche o formulário. A equipa revê e, quando estiver publicado, recebes um email com o link.</p>
         <div class="porta-botoes">
-          <a class="btn btn-primario" href="conta.html?criar=1&amp;voltar=divulgar">Criar conta</a>
-          <a class="btn btn-contorno" href="conta.html?voltar=divulgar">Já tenho conta · Entrar</a>
+          <a class="btn btn-primario" href="publicar.html">Publicar agora <svg><use href="#i-seta"/></svg></a>
+          <a class="btn btn-contorno" href="conta.html">A minha conta</a>
         </div>
-      </div>
-
-      <form class="formulario" id="formDivulgar" novalidate>
-        <div class="segmento" role="tablist" aria-label="Tipo de publicação">
-          <button type="button" class="on" data-tipo="evento" role="tab" aria-selected="true"><svg><use href="#i-calendario"/></svg> Evento</button>
-          <button type="button" data-tipo="artista" role="tab" aria-selected="false"><svg><use href="#i-mic"/></svg> Artista / portfólio</button>
-          <i class="segmento-fundo"></i>
-        </div>
-
-        <div class="grupo" data-grupo="evento">
-          <label class="c c-2"><span>Nome do evento *</span><input name="titulo" type="text" required maxlength="120" placeholder="Ex.: Noite de fado no Mercado"></label>
-          <label class="c"><span>Categoria *</span><select name="categoria" required><option value="">Escolhe…</option></select></label>
-          <label class="c"><span>Concelho *</span><select name="concelho" required><option value="">Escolhe…</option></select></label>
-          <fieldset class="c c-2 quando">
-            <legend><span>Quando acontece? *</span></legend>
-            <div class="opcoes" role="radiogroup">
-              <label><input type="radio" name="recorrencia" value="nenhuma" checked><span>Um dia</span></label>
-              <label><input type="radio" name="recorrencia" value="varios"><span>Vários dias seguidos</span></label>
-              <label><input type="radio" name="recorrencia" value="semanal"><span>Todas as semanas</span></label>
-            </div>
-          </fieldset>
-          <label class="c"><span id="rotuloData">Data *</span><input name="data" type="date" required></label>
-          <label class="c"><span>Hora</span><input name="hora" type="time"></label>
-          <label class="c" data-quando="varios" hidden><span>Último dia *</span><input name="data_fim" type="date"></label>
-          <div class="c c-2 dias-semana" data-quando="semanal" hidden>
-            <span>Em que dias da semana? *</span>
-            <div class="opcoes">
-              <label><input type="checkbox" name="dias_semana" value="1"><span>Seg</span></label>
-              <label><input type="checkbox" name="dias_semana" value="2"><span>Ter</span></label>
-              <label><input type="checkbox" name="dias_semana" value="3"><span>Qua</span></label>
-              <label><input type="checkbox" name="dias_semana" value="4"><span>Qui</span></label>
-              <label><input type="checkbox" name="dias_semana" value="5"><span>Sex</span></label>
-              <label><input type="checkbox" name="dias_semana" value="6"><span>Sáb</span></label>
-              <label><input type="checkbox" name="dias_semana" value="0"><span>Dom</span></label>
-            </div>
-            <small>O evento fica na agenda todas as semanas, sem precisares de o voltar a publicar.</small>
-          </div>
-          <label class="c" data-quando="semanal" hidden><span>Repete-se até <small>(opcional)</small></span><input name="repete_ate" type="date"></label>
-          <label class="c c-2"><span>Local</span><input name="local" type="text" maxlength="120" placeholder="Sala, rua, espaço…"></label>
-          <label class="c c-2"><span>Descrição *</span><textarea name="descricao" required minlength="40" maxlength="1200" rows="4" placeholder="O que vai acontecer, para quem é, preço, bilhetes…"></textarea></label>
-          <label class="c c-2"><span>Link para bilhetes ou mais informação</span><input name="link" type="url" placeholder="https://"></label>
-          <label class="c c-2"><span>Tags <small>(separadas por vírgula, ajudam na pesquisa)</small></span><input name="tags" type="text" maxlength="200" placeholder="Ex.: grátis, família, ao ar livre"></label>
-        </div>
-
-        <div class="grupo" data-grupo="artista" hidden>
-          <label class="c c-2"><span>Nome artístico *</span><input name="nome_artistico" type="text" maxlength="120" placeholder="Ex.: Banda Ria, Joana Silva…"></label>
-          <label class="c"><span>Área *</span><select name="area"><option value="">Escolhe…</option><option>Música</option><option>Teatro &amp; circo</option><option>Dança</option><option>Artes visuais</option><option>Fotografia e vídeo</option><option>Literatura</option><option>Artesanato</option><option>Outra</option></select></label>
-          <label class="c"><span>Concelho *</span><select name="concelho_artista"><option value="">Escolhe…</option></select></label>
-          <label class="c c-2"><span>Apresentação *</span><textarea name="bio" minlength="40" maxlength="1200" rows="4" placeholder="Quem és, o que fazes, onde já atuaste ou expuseste…"></textarea></label>
-          <label class="c"><span>Site ou portfólio</span><input name="site" type="url" placeholder="https://"></label>
-          <label class="c"><span>Instagram, YouTube ou Spotify</span><input name="rede" type="url" placeholder="https://"></label>
-        </div>
-
-        <div class="grupo">
-          <label class="c c-2 c-ficheiro"><span>Imagem (cartaz ou foto)</span><input name="imagem" type="file" accept="image/*"><small>JPG ou PNG até 5 MB. Opcional, mas ajuda muito.</small></label>
-          <label class="c armadilha" aria-hidden="true"><span>Website</span><input name="website" type="text" tabindex="-1" autocomplete="off"></label>
-          <label class="c"><span>O teu nome *</span><input name="responsavel" type="text" required maxlength="80"></label>
-          <label class="c"><span>Email da conta</span><input name="email" type="email" readonly></label>
-          <label class="c c-2 c-check"><input name="consent" type="checkbox" required><span>Autorizo o Aveiro Cult a publicar esta informação no site, na app e nas redes sociais, e li a <a href="privacidade.html" target="_blank">política de privacidade e os termos</a>.</span></label>
-        </div>
-
-        <p class="form-erro" id="formErro" hidden></p>
-        <div class="form-acoes">
-          <button class="btn btn-primario" type="submit" data-magnetico>Enviar para publicação <svg><use href="#i-seta"/></svg></button>
-          <span class="form-ajuda">Revisão até 48 h úteis. Recebes a resposta por email.</span>
-        </div>
-      </form>
-
-      <div class="form-ok" id="formOk" hidden>
-        <span class="form-ok-icone"><svg><use href="#i-sino"/></svg></span>
-        <h3>Recebido, obrigado!</h3>
-        <p id="formOkTexto">A tua publicação vai ser revista e, assim que for aprovada, aparece no site e na app.</p>
-        <div class="form-ok-botoes"><button class="btn btn-escuro" type="button" id="formOutro">Enviar outra</button><a class="btn btn-contorno" href="conta.html">Ver as minhas publicações</a></div>
       </div>
     </div>
   </div>
@@ -511,7 +439,7 @@
         <h3>Tens um evento, um espaço ou um projeto?</h3>
         <p>Divulga-o no Aveiro Cult e chega a quem vive e visita o distrito.</p>
       </div>
-      <a class="btn btn-escuro" href="#divulgar" data-magnetico>Divulgar agora <svg><use href="#i-seta"/></svg></a>
+      <a class="btn btn-escuro" href="publicar.html" data-magnetico>Divulgar agora <svg><use href="#i-seta"/></svg></a>
     </div>
   </div>
 </section>
@@ -544,7 +472,7 @@
   <a href="#inicio" class="on" data-nav><svg><use href="#i-casa"/></svg><span>Início</span></a>
   <a href="#agenda" data-nav><svg><use href="#i-calendario"/></svg><span>Agenda</span></a>
   <a href="#noticias" data-nav><svg><use href="#i-jornal"/></svg><span>Notícias</span></a>
-  <a href="#divulgar" data-nav><svg><use href="#i-mais"/></svg><span>Divulgar</span></a>
+  <a href="publicar.html"><svg><use href="#i-mais"/></svg><span>Divulgar</span></a>
   <button type="button" data-instalar><svg><use href="#i-download"/></svg><span>Instalar</span></button>
 </nav>
 
@@ -568,7 +496,7 @@
 
 <script src="js/dados.js?v=20"></script>
 <script src="js/sessao.js?v=1"></script>
-<script src="js/app.js?v=27"></script>
+<script src="js/app.js?v=28"></script>
 <script src="js/imagens.js?v=2"></script>
 <script src="js/analytics.js?v=1"></script>
 </body>

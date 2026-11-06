@@ -51,7 +51,7 @@
   const abrirEmCriar = /[?&]criar=1/.test(location.search) || /^#criar/.test(location.hash);
   // vindo do formulário "Divulgar": depois de entrar volta para lá
   const voltarDivulgar = /[?&]voltar=divulgar/.test(location.search);
-  const seguir = () => voltarDivulgar ? location.replace("./#divulgar") : abrirConta();
+  const seguir = () => voltarDivulgar ? location.replace("publicar.html") : abrirConta();
 
   /* ---------- Entrar ---------- */
   $("#formEntrar").addEventListener("submit", async e => {
@@ -191,7 +191,7 @@
   function desenharPublicacoes(lista) {
     const el = $("#minhas");
     if (lista === null) { el.innerHTML = `<p class="vazio-conta">Não foi possível carregar as publicações. <button class="ligacao" type="button" onclick="location.reload()">Tentar de novo</button></p>`; return; }
-    if (!lista.length) { el.innerHTML = `<p class="vazio-conta">Ainda não publicaste nada. <a href="./#divulgar">Divulga o teu primeiro evento</a>.</p>`; return; }
+    if (!lista.length) { el.innerHTML = `<p class="vazio-conta">Ainda não publicaste nada. <a href="publicar.html">Divulga o teu primeiro evento</a>.</p>`; return; }
     el.innerHTML = lista.map(p => {
       const ver = p.estado === "aprovado" ? `<a href="${p.tipo === "evento" ? "evento" : "artista"}.html?id=${p.id}">Ver no site</a>` : "";
       const falar = p.estado === "rejeitado" ? `<a href="${linkWhats(`Olá! A minha publicação "${p.titulo}" não foi publicada no Aveiro Cult. Podemos falar?`)}" target="_blank" rel="noopener"><svg><use href="#i-whats"/></svg>Falar no WhatsApp</a>` : "";
