@@ -521,6 +521,8 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .c-ficheiro input { padding: 11px 13px; border-style: dashed; cursor: pointer; }
 .c-ficheiro input::file-selector-button { border: 0; border-radius: 999px; padding: 7px 14px; margin-right: 12px; background: var(--tinta); color: #fff; font: 600 13px var(--fonte); cursor: pointer; }
 .c-ficheiro small { color: var(--cinza); font-size: 12.5px; }
+.c small.contador { color: var(--cinza); font-size: 12.5px; margin-top: 6px; }
+.c small.contador.ok { color: #11663a; }
 .c-check { flex-direction: row; align-items: flex-start; gap: 12px; }
 .c-check input { width: 20px; height: 20px; padding: 0; border-radius: 6px; flex: none; margin-top: 1px; cursor: pointer; display: grid; place-items: center; }
 .c-check input:checked { background: var(--primaria); border-color: var(--primaria); }

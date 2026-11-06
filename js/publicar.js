@@ -21,6 +21,24 @@ document.getElementById("ano").textContent = new Date().getFullYear();
   [...CATEGORIAS.filter(c => c.f).map(c => c.f), "Workshop", "Festival", "Exposição", "Literatura", "Mercado", "Outros"].forEach(c => selCat.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
   ["concelho", "concelho_artista"].forEach(n => { const s = form.querySelector(`select[name="${n}"]`); CONCELHOS.forEach(c => s.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`)); });
   const hoje = new Date().toISOString().slice(0, 10); form.querySelector('input[name="data"]').min = hoje;
+
+  // Textos com mínimo de caracteres: contador por baixo, para não haver surpresas ao enviar
+  form.querySelectorAll("textarea[minlength]").forEach(t => {
+    const min = +t.getAttribute("minlength"), info = document.createElement("small"); info.className = "contador"; info.setAttribute("aria-live", "polite");
+    const atualizar = () => { const n = t.value.trim().length; info.textContent = n >= min ? `${n} caracteres` : `Mínimo ${min} caracteres · faltam ${min - n}`; info.classList.toggle("ok", n >= min); t.setCustomValidity(""); };
+    t.after(info); t.addEventListener("input", atualizar); atualizar();
+  });
+  // Mensagem de erro que diz qual é o campo e o que falta
+  const nomeCampo = el => (el.closest("label")?.querySelector("span")?.textContent || "").replace(/\s*\*\s*$/, "").trim();
+  const motivo = el => {
+    const v = el.validity, nome = nomeCampo(el);
+    if (el.type === "checkbox") return "Falta marcar a caixa de autorização para podermos publicar.";
+    if (v.valueMissing) return nome ? `Falta preencher: ${nome}.` : "Falta preencher um campo obrigatório (marcado com *).";
+    if (v.tooShort || (el.minLength > 0 && el.value.trim().length < el.minLength)) return `${nome ? `«${nome}»` : "Este campo"} precisa de pelo menos ${el.minLength} caracteres (tem ${el.value.trim().length}).`;
+    if (v.typeMismatch || v.patternMismatch) return `${nome ? `«${nome}»` : "Este campo"} não está num formato válido${el.type === "url" ? " (deve começar por https://)" : ""}.`;
+    if (v.rangeUnderflow) return `${nome || "A data"} não pode ser no passado.`;
+    return "Há um campo por corrigir (marcado a vermelho).";
+  };
   if (sessaoMod) form.insertAdjacentHTML("afterbegin", `<p class="aviso-mod">Sessão de moderação (${esc(sessaoMod.email || "equipa")}): o que enviares aqui é publicado de imediato. <a href="admin.html">Voltar ao painel</a></p>`);
 
   // Só publica quem tem conta (a conta cria-se sem aprovação). A sessão da equipa (painel) também serve.
@@ -84,7 +102,9 @@ document.getElementById("ano").textContent = new Date().getFullYear();
     e.preventDefault(); form.classList.add("validar");
     // proteção anti-spam: robôs preenchem o campo escondido ou submetem em menos de 4 segundos
     if (form.querySelector('[name="website"]').value || Date.now() - abertoEm < 4000) { form.hidden = true; ok.hidden = false; return; }
-    if (!form.checkValidity()) { erro.textContent = "Falta preencher alguns campos obrigatórios (marcados com *)."; erro.hidden = false; form.querySelector(":invalid")?.focus(); return; }
+    // minlength só é verificado pelo browser depois de o utilizador escrever; aqui conta sempre (texto sem espaços nas pontas)
+    form.querySelectorAll("textarea[minlength]").forEach(t => t.setCustomValidity(t.required || t.value.trim() ? (t.value.trim().length < t.minLength ? "curto" : "") : ""));
+    if (!form.checkValidity()) { const mau = [...form.querySelectorAll(":invalid")].find(el => !el.closest("[hidden]")) || form.querySelector(":invalid"); erro.textContent = motivo(mau); erro.hidden = false; mau?.focus(); return; }
     const recorrencia = form.querySelector('[name="recorrencia"]:checked')?.value || "nenhuma";
     const diasSemana = [...form.querySelectorAll('[name="dias_semana"]:checked')].map(i => Number(i.value));
     if (tipo === "evento" && recorrencia === "semanal" && !diasSemana.length) { erro.textContent = "Escolhe pelo menos um dia da semana."; erro.hidden = false; form.querySelector(".dias-semana").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
