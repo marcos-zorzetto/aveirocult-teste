@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=29">
+  <link rel="stylesheet" href="css/estilo.css?v=30">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://marcos-zorzetto.github.io/aveirocult-teste/icones/icone-512.png"}}</script>
 </head>
 <body>
@@ -56,6 +56,7 @@
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4Z"/><path d="M8 9h8M8 12h5"/></symbol>
   <symbol id="i-insta" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></symbol>
   <symbol id="i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-pessoa" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
   <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-raio" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7Z"/></symbol>
@@ -109,6 +110,7 @@
       <a href="#comunidade" data-nav>Comunidade</a>
     </nav>
     <div class="topo-acoes">
+      <a class="btn-conta" href="conta.html" id="btnConta" aria-label="A minha conta"><svg><use href="#i-pessoa"/></svg><span>Entrar</span></a>
       <button class="btn btn-contorno" data-instalar data-magnetico><svg><use href="#i-download"/></svg>Instalar app</button>
       <button class="hamburguer" id="abrirMenu" aria-label="Abrir menu" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
     </div>
@@ -125,8 +127,9 @@
     <a href="#noticias" style="--i:3">Notícias</a>
     <a href="#explorar" style="--i:4">Concelhos</a>
     <a href="#comunidade" style="--i:5">Comunidade</a>
+    <a href="conta.html" style="--i:6">A minha conta</a>
   </nav>
-  <div class="menu-movel-pe" style="--i:6">
+  <div class="menu-movel-pe" style="--i:7">
     <button class="btn btn-primario btn-largo" data-instalar><svg><use href="#i-download"/></svg>Instalar a app</button>
     <p>Agenda cultural dos 19 concelhos do distrito de Aveiro.</p>
   </div>
@@ -354,11 +357,21 @@
       <aside class="divulgar-lado">
         <ol class="passos">
           <li><b>1</b><span><strong>Escolhe</strong> o que queres divulgar: um evento ou o teu portfólio de artista.</span></li>
-          <li><b>2</b><span><strong>Preenche</strong> os dados. Só demora um minuto.</span></li>
-          <li><b>3</b><span><strong>Fica público</strong>: com os dados completos entra logo na agenda; caso contrário passa por uma revisão rápida.</span></li>
+          <li><b>2</b><span><strong>Entra na tua conta</strong> e preenche os dados. Só demora um minuto.</span></li>
+          <li><b>3</b><span><strong>Revisão</strong>: a equipa confirma e recebes um email assim que estiver publicado.</span></li>
         </ol>
-        <p class="divulgar-nota">Gratuito. Para associações, câmaras, espaços, produtores, coletivos e artistas do distrito.</p>
+        <p class="divulgar-nota">Para associações, câmaras, espaços, produtores, coletivos e artistas do distrito. Acompanha tudo em <a href="conta.html">A minha conta</a>.</p>
       </aside>
+
+      <div class="formulario porta-conta" id="portaConta" hidden>
+        <span class="form-ok-icone"><svg><use href="#i-pessoa"/></svg></span>
+        <h3>Entra para publicar</h3>
+        <p>Para divulgar precisas de uma conta no Aveiro Cult. Cria-a num minuto, sem esperar por aprovação, e acompanha cada publicação em <b>A minha conta</b>.</p>
+        <div class="porta-botoes">
+          <a class="btn btn-primario" href="conta.html?criar=1&amp;voltar=divulgar">Criar conta</a>
+          <a class="btn btn-contorno" href="conta.html?voltar=divulgar">Já tenho conta · Entrar</a>
+        </div>
+      </div>
 
       <form class="formulario" id="formDivulgar" novalidate>
         <div class="segmento" role="tablist" aria-label="Tipo de publicação">
@@ -415,14 +428,14 @@
           <label class="c c-2 c-ficheiro"><span>Imagem (cartaz ou foto)</span><input name="imagem" type="file" accept="image/*"><small>JPG ou PNG até 5 MB. Opcional, mas ajuda muito.</small></label>
           <label class="c armadilha" aria-hidden="true"><span>Website</span><input name="website" type="text" tabindex="-1" autocomplete="off"></label>
           <label class="c"><span>O teu nome *</span><input name="responsavel" type="text" required maxlength="80"></label>
-          <label class="c"><span>Email *</span><input name="email" type="email" required placeholder="para confirmarmos a publicação"></label>
+          <label class="c"><span>Email da conta</span><input name="email" type="email" readonly></label>
           <label class="c c-2 c-check"><input name="consent" type="checkbox" required><span>Autorizo o Aveiro Cult a publicar esta informação no site, na app e nas redes sociais, e li a <a href="privacidade.html" target="_blank">política de privacidade e os termos</a>.</span></label>
         </div>
 
         <p class="form-erro" id="formErro" hidden></p>
         <div class="form-acoes">
           <button class="btn btn-primario" type="submit" data-magnetico>Enviar para publicação <svg><use href="#i-seta"/></svg></button>
-          <span class="form-ajuda">Publicação imediata ou revisão até 48 h úteis. Sem custos.</span>
+          <span class="form-ajuda">Revisão até 48 h úteis. Recebes a resposta por email.</span>
         </div>
       </form>
 
@@ -430,7 +443,7 @@
         <span class="form-ok-icone"><svg><use href="#i-sino"/></svg></span>
         <h3>Recebido, obrigado!</h3>
         <p id="formOkTexto">A tua publicação vai ser revista e, assim que for aprovada, aparece no site e na app.</p>
-        <button class="btn btn-escuro" type="button" id="formOutro">Enviar outra</button>
+        <div class="form-ok-botoes"><button class="btn btn-escuro" type="button" id="formOutro">Enviar outra</button><a class="btn btn-contorno" href="conta.html">Ver as minhas publicações</a></div>
       </div>
     </div>
   </div>
@@ -554,7 +567,8 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/dados.js?v=20"></script>
-<script src="js/app.js?v=25"></script>
+<script src="js/sessao.js?v=1"></script>
+<script src="js/app.js?v=26"></script>
 <script src="js/imagens.js?v=2"></script>
 <script src="js/analytics.js?v=1"></script>
 </body>

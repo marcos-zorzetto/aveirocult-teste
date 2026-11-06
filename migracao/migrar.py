@@ -5,7 +5,7 @@
 #
 # O que faz:
 #  1. troca o endereço de teste (GitHub Pages) pelo domínio definitivo em canonical, og:url, JSON-LD, robots, sitemap e 404;
-#  2. tira o "noindex" de todas as páginas públicas (o painel admin.html e a página 404 continuam fora do Google);
+#  2. tira o "noindex" de todas as páginas públicas (o painel admin.html, a conta.html e a página 404 continuam fora do Google);
 #  3. copia o .htaccess (redirecionamentos do WordPress antigo, HTTPS, cache e cabeçalhos de segurança);
 #  4. gera o sitemap.xml com as notícias, eventos e artistas publicados (precisa de internet).
 import re, shutil, subprocess, sys, pathlib
@@ -20,7 +20,7 @@ if destino.exists(): shutil.rmtree(destino)
 ignorar = shutil.ignore_patterns(".git", "migracao", "__pycache__", "*.md")
 shutil.copytree(raiz, destino, ignore=ignorar)
 
-SEMPRE_FORA = {"admin.html", "404.html"}
+SEMPRE_FORA = {"admin.html", "404.html", "conta.html"}
 for f in destino.rglob("*"):
     if f.suffix not in {".html", ".js", ".txt", ".xml", ".py", ".webmanifest"}: continue
     s = f.read_text(encoding="utf-8"); antes = s

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=8">
+  <link rel="stylesheet" href="css/admin.css?v=9">
 </head>
 <body>
 
@@ -61,6 +61,7 @@
       <button class="on" data-modo="submissoes" type="button">Eventos e artistas</button>
       <button data-modo="noticias" type="button">Notícias</button>
       <button data-modo="parceiros" type="button">Parceiros</button>
+      <button data-modo="clientes" type="button">Clientes</button>
     </div>
     <div id="modoSubmissoes">
     <div class="abas" id="abas">
@@ -69,12 +70,24 @@
       <button data-estado="rejeitado" type="button">Rejeitados <b id="nRej">0</b></button>
     </div>
     <div class="filtros">
-      <label class="auto"><span>Publicação automática</span><select id="autoPublicar"><option value="nunca">Nunca: tudo passa por mim</option><option value="confiaveis">Quem já teve algo aprovado</option><option value="todos">Todos os que cumprem os critérios</option></select></label>
       <select id="filtroTipo"><option value="">Eventos e artistas</option><option value="evento">Só eventos</option><option value="artista">Só artistas</option></select>
       <button class="btn-leve" id="atualizar" type="button">Atualizar</button>
     </div>
     <div class="lista" id="lista"></div>
     <p class="vazio" id="vazio" hidden>Nada por aqui.</p>
+    <p class="nota nota-fluxo">Tudo o que os clientes enviam fica aqui à espera. Ao aprovar ou rejeitar, o cliente recebe um email automático; na rejeição, o email leva o motivo e o link do WhatsApp.</p>
+    </div>
+
+    <!-- Clientes (contas criadas no site) -->
+    <div id="modoClientes" hidden>
+      <div class="filtros">
+        <input class="pesquisa-clientes" id="pesquisaClientes" type="search" placeholder="Procurar por nome, email ou empresa">
+        <select id="filtroClientes"><option value="">Todos</option><option value="em-dia">Assinatura em dia</option><option value="atraso">Sem assinatura ou em atraso</option></select>
+        <button class="btn-leve" id="atualizarClientes" type="button">Atualizar</button>
+      </div>
+      <p class="nota" id="nClientes"></p>
+      <div class="lista" id="listaClientes"></div>
+      <p class="vazio" id="vazioClientes" hidden>Ainda não há clientes com conta.</p>
     </div>
 
     <!-- Notícias -->
@@ -146,6 +159,6 @@
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="js/admin.js?v=9"></script>
+<script src="js/admin.js?v=10"></script>
 </body>
 </html>

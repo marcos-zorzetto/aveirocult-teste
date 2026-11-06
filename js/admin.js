@@ -28,7 +28,7 @@ function cartao(qual) { ["formEntrar", "formRecuperar", "formSenha"].forEach(id 
 function mostrar() {
   const ok = !tokenTemp && sessao && sessao.expira > Date.now(); // com um link de convite/recuperação aberto, mostra primeiro o "criar palavra-passe"
   $("#entrada").hidden = !!ok; $("#painel").hidden = !ok; ["sair", "mudarSenha", "publicarEvento"].forEach(id => $("#" + id).hidden = !ok);
-  if (ok) { carregar(); lerAuto(); } else if (sessao) sair();
+  if (ok) carregar(); else if (sessao) sair();
 }
 
 /* ---------- Primeiro acesso e recuperação ----------
@@ -97,17 +97,20 @@ async function carregar() {
   if (r.status === 401) return sair();
   if (!r.ok) { avisar("Sem permissão. A tua conta não está na lista de moderadores."); return; }
   const itens = await r.json();
+  ITENS = Object.fromEntries(itens.map(i => [i.id, i]));
+  await lerClientes(itens.map(i => i.autor));
   $("#vazio").hidden = itens.length > 0;
   $("#lista").innerHTML = itens.map(i => `<article class="item" data-id="${i.id}">
     <div class="item-img">${i.imagem ? `<a href="${esc(i.imagem)}" target="_blank" rel="noopener"><img src="${esc(i.imagem)}" alt="" onerror="this.parentElement.parentElement.textContent='imagem indisponível'"></a>` : "sem imagem"}</div>
     <div class="item-corpo">
       <span class="etiq">${i.tipo === "evento" ? "Evento" : "Artista"} <i>· ${esc(i.categoria || "")}${i.concelho ? " · " + esc(i.concelho) : ""}</i></span>
       <h3>${esc(i.titulo)}${emDestaque(i) ? `<span class="destaque-on">★ Em destaque até ${dataPt(i.destaque_ate)}</span>` : ""}</h3>
+      ${linhaAssinatura(i)}
       ${i.tipo === "evento" ? `<p class="meta">${i.recorrencia === "semanal" ? `<b>Todas as semanas</b> (${(i.dias_semana || []).map(d => ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][d]).join(", ")})${i.repete_ate ? " até " + dataPt(i.repete_ate) : ""} · desde ${dataPt(i.data)}` : `${dataPt(i.data)}${i.data_fim && i.data_fim.slice(0, 10) !== i.data ? " a " + dataPt(i.data_fim.slice(0, 10)) : ""}`}${i.hora ? " · " + esc(i.hora.slice(0, 5)) : ""}${i.local ? " · " + esc(i.local) : ""}</p>` : ""}
       <p class="desc">${esc(i.descricao || "")}</p>
       ${i.tipo === "evento" ? `<p class="tags">${(i.tags || []).length ? i.tags.map(t => `<span>#${esc(t)}</span>`).join("") : "<i>sem tags</i>"} <button class="ligacao" data-acao="tags">editar tags</button></p>` : ""}
       <p class="links">${[i.link, i.site, i.rede].filter(Boolean).map(l => `<a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`).join("")}</p>
-      <p class="quem">Enviado por <b>${esc(i.responsavel || "?")}</b> · ${esc(i.email || "")} · ${dataPt(i.criado_em)}${i.nota_moderacao ? ` · nota: ${esc(i.nota_moderacao)}` : ""}</p>
+      <p class="quem">Enviado por <b>${esc(i.responsavel || "?")}</b> · ${esc(i.email || "")} · ${dataPt(i.criado_em)}${i.nota_moderacao ? ` · ${i.estado === "rejeitado" ? "motivo" : "nota"}: ${esc(i.nota_moderacao)}` : ""} ${linhaAviso(i)}</p>
       <div class="acoes">
         ${i.estado !== "aprovado" ? `<button class="aprovar" data-acao="aprovado">Aprovar e publicar</button>` : ""}
         ${i.estado !== "rejeitado" ? `<button class="rejeitar" data-acao="rejeitado">Rejeitar</button>` : ""}
@@ -149,11 +152,24 @@ async function mudar(id, acao) {
     if (!r.ok) return avisar("Não foi possível guardar as tags.");
     avisar("Tags guardadas."); return carregar();
   }
+  const item = ITENS[id] || {}, cliente = CLIENTES[item.autor];
+  if (acao === "aprovado" && item.autor && cliente && !emDia(cliente) && !confirm(`A assinatura de ${cliente.nome || cliente.email} não está em dia. Publicar mesmo assim?`)) return;
   let nota = null;
-  if (acao === "rejeitado") { nota = prompt("Motivo (opcional, fica só para a equipa):") ?? ""; }
+  if (acao === "rejeitado") {
+    const sug = item.autor && cliente && !emDia(cliente) ? "A assinatura não está em dia." : "";
+    nota = prompt("Motivo da rejeição. O cliente vê este texto no email e na conta dele:", sug); if (nota === null) return;
+    nota = nota.trim();
+  }
   const r = await fetch(`${BD.url}/rest/v1/submissoes?id=eq.${id}`, { method: "PATCH", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify({ estado: acao, revisto_em: new Date().toISOString(), ...(nota !== null ? { nota_moderacao: nota || null } : {}) }) });
   if (!r.ok) return avisar("Não foi possível guardar.");
-  avisar(acao === "aprovado" ? "Publicado no site e na app." : acao === "rejeitado" ? "Rejeitado." : "Voltou a pendente.");
+  let msg = acao === "aprovado" ? "Publicado no site e na app." : acao === "rejeitado" ? "Rejeitado." : "Voltou a pendente.";
+  if ((acao === "aprovado" || acao === "rejeitado") && item.autor) {
+    const res = await notificar(id);
+    msg += res === "ok" ? " O cliente recebeu o email." : res === "ja-avisado" || res === "sem-conta" ? ""
+      : res === "sem-servico" ? " O email ao cliente ainda não sai: falta ligar o serviço de email. Ele vê o estado em “A minha conta”."
+      : " Atenção: o email ao cliente falhou. Ele vê o estado em “A minha conta”.";
+  }
+  avisar(msg);
   carregar();
 }
 
@@ -166,15 +182,31 @@ $("#sair").addEventListener("click", sair);
 $("#abas").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; estado = b.dataset.estado; document.querySelectorAll("#abas button").forEach(x => x.classList.toggle("on", x === b)); carregar(); });
 $("#filtroTipo").addEventListener("change", e => { tipo = e.target.value; carregar(); });
 
-/* ---------- Definição: publicação automática ---------- */
-async function lerAuto() {
-  const r = await fetch(`${BD.url}/rest/v1/definicoes?chave=eq.auto_publicar&select=valor`, { headers: cab() });
-  const j = r.ok ? await r.json() : []; $("#autoPublicar").value = j[0]?.valor || "confiaveis";
+/* ---------- Clientes: assinatura e aviso por email ---------- */
+let CLIENTES = {}, ITENS = {};
+const emDia = c => !!(c?.assinatura_ate && c.assinatura_ate >= hojeIso());
+async function lerClientes(ids) {
+  ids = [...new Set(ids.filter(Boolean))]; if (!ids.length) return;
+  const r = await fetch(`${BD.url}/rest/v1/clientes?id=in.(${ids.join(",")})&select=id,nome,empresa,telefone,email,assinatura_ate`, { headers: cab() }).catch(() => null);
+  if (r && r.ok) (await r.json()).forEach(c => { CLIENTES[c.id] = c; });
 }
-$("#autoPublicar").addEventListener("change", async e => {
-  const r = await fetch(`${BD.url}/rest/v1/definicoes`, { method: "POST", headers: { ...cab(), Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify({ chave: "auto_publicar", valor: e.target.value, atualizado_em: new Date().toISOString() }) });
-  avisar(r.ok ? "Definição guardada." : "Não foi possível guardar.");
-});
+function linhaAssinatura(i) {
+  if (!i.autor) return i.origem === "adalo" ? "" : `<p class="assin sem-conta">Enviado sem conta (antes das contas de cliente)</p>`;
+  const c = CLIENTES[i.autor];
+  if (!c) return `<p class="assin">Conta de cliente</p>`;
+  const quem = `${esc(c.nome || c.email)}${c.empresa ? " · " + esc(c.empresa) : ""}`;
+  return emDia(c) ? `<p class="assin ok">✓ Assinatura em dia até ${dataPt(c.assinatura_ate)} · ${quem}</p>`
+    : `<p class="assin atraso">⚠ ${c.assinatura_ate ? "Assinatura terminou a " + dataPt(c.assinatura_ate) : "Sem assinatura registada"} · ${quem} <button class="ligacao" data-ir-cliente="${esc(c.id)}">ver cliente</button></p>`;
+}
+const linhaAviso = i => i.aviso_estado && i.aviso_estado === i.estado ? `<span class="avisado">✉ cliente avisado ${dataPt(i.aviso_em)}</span>` : "";
+// Envia ao cliente o email de "publicado" ou "não publicado" (função "notificar" no Supabase)
+async function notificar(id) {
+  try {
+    const r = await fetch(`${BD.url}/functions/v1/notificar`, { method: "POST", headers: cab(), body: JSON.stringify({ id }) });
+    const j = await r.json().catch(() => ({}));
+    return r.ok && j.enviado ? "ok" : j.motivo || "falhou";
+  } catch { return "falhou"; }
+}
 
 /* ---------- Notícias ---------- */
 const CATS = ["Música", "Teatro & Circo", "Gastronomia", "Família", "Desporto", "Tecnologia", "Workshop", "Festival", "Exposição", "Literatura", "Mercado", "Outros"];
@@ -187,9 +219,11 @@ let modo = "submissoes";
 $("#modos").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   modo = b.dataset.modo; document.querySelectorAll("#modos button").forEach(x => x.classList.toggle("on", x === b));
-  $("#modoSubmissoes").hidden = modo !== "submissoes"; $("#modoNoticias").hidden = modo !== "noticias"; $("#modoParceiros").hidden = modo !== "parceiros";
+  $("#modoSubmissoes").hidden = modo !== "submissoes"; $("#modoNoticias").hidden = modo !== "noticias"; $("#modoParceiros").hidden = modo !== "parceiros"; $("#modoClientes").hidden = modo !== "clientes";
+  if (modo === "submissoes") carregar();
   if (modo === "noticias") carregarNoticias();
   if (modo === "parceiros") carregarParceiros();
+  if (modo === "clientes") carregarClientes();
 });
 async function carregarNoticias() {
   const r = await fetch(`${BD.url}/rest/v1/noticias?select=*&order=data.desc,id.desc&limit=200`, { headers: cab() });
@@ -285,7 +319,10 @@ $("#listaNoticias").addEventListener("click", async e => {
   avisar(acao === "apagar" ? "Apagada." : acao === "publicar" ? "Publicada no site." : "Despublicada."); carregarNoticias();
 });
 $("#atualizar").addEventListener("click", carregar);
-$("#lista").addEventListener("click", e => { const b = e.target.closest("button[data-acao]"); if (!b) return; mudar(b.closest(".item").dataset.id, b.dataset.acao); });
+$("#lista").addEventListener("click", e => {
+  const ir = e.target.closest("[data-ir-cliente]"); if (ir) { $("#pesquisaClientes").value = CLIENTES[ir.dataset.irCliente]?.email || ""; return document.querySelector('#modos [data-modo="clientes"]').click(); }
+  const b = e.target.closest("button[data-acao]"); if (!b) return; mudar(b.closest(".item").dataset.id, b.dataset.acao);
+});
 mostrar();
 
 
@@ -348,4 +385,59 @@ $("#listaParceiros").addEventListener("click", async e => {
     : { method: "PATCH", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify({ ativo: acao === "ativar" }) });
   if (!r.ok) return avisar("Não foi possível guardar.");
   avisar(acao === "apagar" ? "Apagado." : acao === "ativar" ? "Parceiro visível no site." : "Parceiro escondido."); carregarParceiros();
+});
+
+
+/* ---------- Clientes (contas criadas no site) ---------- */
+let LISTA_CLIENTES = [], CONTAGEM = {};
+async function carregarClientes() {
+  const [rc, rs] = await Promise.all([
+    fetch(`${BD.url}/rest/v1/clientes?select=*&order=criado_em.desc&limit=1000`, { headers: cab() }),
+    fetch(`${BD.url}/rest/v1/submissoes?select=autor,estado&autor=not.is.null&limit=5000`, { headers: cab() })
+  ]);
+  if (rc.status === 401) return sair();
+  if (!rc.ok) { $("#nClientes").textContent = "Falta atualizar a base de dados (script das contas de clientes)."; $("#listaClientes").innerHTML = ""; return; }
+  // a equipa (moderadores) não aparece na lista de clientes
+  const rmod = await fetch(`${BD.url}/rest/v1/moderadores?select=email`, { headers: cab() }).catch(() => null);
+  const equipa = new Set((rmod && rmod.ok ? await rmod.json() : []).map(m => String(m.email).toLowerCase()));
+  LISTA_CLIENTES = (await rc.json()).filter(c => !equipa.has(String(c.email || "").toLowerCase()));
+  CONTAGEM = {}; (rs.ok ? await rs.json() : []).forEach(x => { const c = CONTAGEM[x.autor] ||= { total: 0, pendente: 0 }; c.total++; if (x.estado === "pendente") c.pendente++; });
+  desenharClientes();
+}
+function desenharClientes() {
+  const q = $("#pesquisaClientes").value.trim().toLowerCase(), f = $("#filtroClientes").value;
+  const lista = LISTA_CLIENTES.filter(c => (!q || `${c.nome} ${c.email} ${c.empresa} ${c.telefone}`.toLowerCase().includes(q)) && (!f || (f === "em-dia") === emDia(c)));
+  $("#nClientes").textContent = `${LISTA_CLIENTES.length} contas · ${LISTA_CLIENTES.filter(emDia).length} com assinatura em dia${lista.length !== LISTA_CLIENTES.length ? ` · a mostrar ${lista.length}` : ""}`;
+  $("#vazioClientes").hidden = lista.length > 0;
+  const tel = t => String(t || "").replace(/\D/g, "");
+  $("#listaClientes").innerHTML = lista.map(c => {
+    const n = CONTAGEM[c.id] || { total: 0, pendente: 0 }, t = tel(c.telefone);
+    return `<article class="cliente" data-id="${esc(c.id)}">
+      <div class="cliente-info">
+        <h3>${esc(c.nome || "(sem nome)")}${c.empresa ? ` <i>· ${esc(c.empresa)}</i>` : ""}</h3>
+        <p class="meta"><a href="mailto:${esc(c.email)}">${esc(c.email)}</a>${t ? ` · <a href="https://wa.me/${t.length === 9 ? "351" + t : t}" target="_blank" rel="noopener">${esc(c.telefone)}</a>` : ""} · conta desde ${dataPt(c.criado_em)}</p>
+        <p class="meta">${n.total} publicaç${n.total === 1 ? "ão" : "ões"}${n.pendente ? ` · <b>${n.pendente} à espera</b>` : ""}</p>
+      </div>
+      <div class="cliente-assin ${emDia(c) ? "ok" : "atraso"}">
+        <span>${emDia(c) ? "Assinatura em dia" : c.assinatura_ate ? "Terminou a " + dataPt(c.assinatura_ate) : "Sem assinatura"}</span>
+        <label><span>Paga até</span><input type="date" value="${esc(c.assinatura_ate || "")}" data-assin></label>
+        <div class="acoes"><button class="aprovar" data-guardar-assin>Guardar</button>${c.assinatura_ate ? `<button class="apagar" data-limpar-assin>Tirar</button>` : ""}</div>
+      </div>
+    </article>`;
+  }).join("");
+}
+$("#pesquisaClientes").addEventListener("input", desenharClientes);
+$("#filtroClientes").addEventListener("change", desenharClientes);
+$("#atualizarClientes").addEventListener("click", carregarClientes);
+$("#listaClientes").addEventListener("click", async e => {
+  const b = e.target.closest("[data-guardar-assin], [data-limpar-assin]"); if (!b) return;
+  const art = b.closest(".cliente"), id = art.dataset.id;
+  const ate = b.hasAttribute("data-limpar-assin") ? null : art.querySelector("[data-assin]").value || null;
+  if (b.hasAttribute("data-guardar-assin") && !ate) return avisar("Escolhe a data até quando está paga.");
+  b.disabled = true;
+  const r = await fetch(`${BD.url}/rest/v1/clientes?id=eq.${id}`, { method: "PATCH", headers: { ...cab(), Prefer: "return=representation" }, body: JSON.stringify({ assinatura_ate: ate }) });
+  const linhas = r.ok ? await r.json() : [];
+  if (!linhas.length) { b.disabled = false; return avisar("Não foi possível guardar."); }
+  const i = LISTA_CLIENTES.findIndex(c => c.id === id); if (i >= 0) LISTA_CLIENTES[i] = linhas[0]; CLIENTES[id] = linhas[0];
+  avisar(ate ? `Assinatura em dia até ${dataPt(ate)}.` : "Assinatura retirada."); desenharClientes();
 });

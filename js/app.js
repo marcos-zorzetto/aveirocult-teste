@@ -379,8 +379,8 @@ $("#ano").textContent = new Date().getFullYear();
 // Base de dados (Supabase). A chave abaixo é pública por desenho: só permite inserir submissões pendentes e ler o que foi aprovado.
 const ENVIO = { url: "https://otcpgtauymtavygscxfo.supabase.co", chave: "sb_publishable_DiaWIBUyBbCHnCDolUWFuw_fjONpncM", tabela: "submissoes" };
 const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}` };
-// Links de convite / recuperação de palavra-passe do Supabase chegam à página inicial: passam para o painel
-if (/access_token=|error_description=/.test(location.hash) && /type=(invite|recovery|magiclink|signup)|error/.test(location.hash)) location.replace("admin.html" + location.hash);
+// Links dos emails do Supabase que chegam à página inicial: convites vão para o painel da equipa; confirmação de conta e recuperação vão para "A minha conta"
+if (/access_token=|error_description=/.test(location.hash) && /type=(invite|recovery|magiclink|signup)|error/.test(location.hash)) location.replace((/type=invite/.test(location.hash) ? "admin.html" : "conta.html") + location.hash);
 // Sessão de moderação aberta neste separador (painel): o evento enviado pela equipa é publicado logo
 const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac-mod") || "null"); return x && x.expira > Date.now() + 60000 ? x : null; } catch { return null; } })();
 
@@ -414,9 +414,9 @@ const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac
   if (!EVENTOS.length) {
     const vz = $("#agendaVazio");
     vz.innerHTML = falhou ? `Não foi possível carregar a agenda agora. Verifica a ligação à internet e <button type="button" class="ligacao" onclick="location.reload()">tenta de novo</button>.`
-      : `Ainda não há eventos aprovados para os próximos dias. <a href="#divulgar">Divulga o teu evento</a>, é grátis.`;
+      : `Ainda não há eventos aprovados para os próximos dias. <a href="#divulgar">Divulga o teu evento</a>.`;
     vz.hidden = false; $("#agendaResultado").textContent = "";
-    const it = ["Agenda cultural do distrito de Aveiro", "Divulga o teu evento ou o teu trabalho artístico · é grátis", "Concertos, teatro, exposições, mercados e muito mais"];
+    const it = ["Agenda cultural do distrito de Aveiro", "Divulga o teu evento ou o teu trabalho artístico", "Concertos, teatro, exposições, mercados e muito mais"];
     $("#ticker").innerHTML = [...it, ...it].map(t => `<span>${esc(t)}</span>`).join("");
   }
   // botão "Ver os próximos eventos do Aveiro Cult": só aparece quando há eventos com a etiqueta #aveirocult
@@ -463,6 +463,28 @@ const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac
   const hoje = new Date().toISOString().slice(0, 10); form.querySelector('input[name="data"]').min = hoje;
   if (sessaoMod) form.insertAdjacentHTML("afterbegin", `<p class="aviso-mod">Sessão de moderação (${esc(sessaoMod.email || "equipa")}): o que enviares aqui é publicado de imediato. <a href="admin.html">Voltar ao painel</a></p>`);
 
+  // Só publica quem tem conta (a conta cria-se sem aprovação). A sessão da equipa (painel) também serve.
+  const porta = $("#portaConta");
+  let conta = null;
+  async function verConta() {
+    conta = sessaoMod ? null : await Sessao.obter();
+    const ligado = !!(sessaoMod || conta);
+    if (!ok.hidden) return; // ecrã de "recebido" aberto: não mexe
+    porta.hidden = ligado; form.hidden = !ligado;
+    if (conta) {
+      form.querySelector('[name="email"]').value = conta.email || "";
+      const nome = form.querySelector('[name="responsavel"]'); if (!nome.value) nome.value = conta.nome || "";
+      let av = form.querySelector(".aviso-conta");
+      if (!av) { form.insertAdjacentHTML("afterbegin", `<p class="aviso-conta"></p>`); av = form.querySelector(".aviso-conta"); }
+      av.innerHTML = `A publicar como <b>${esc(conta.email)}</b> · <a href="conta.html">A minha conta</a> · <button type="button" data-trocar>Trocar de conta</button>`;
+    } else if (sessaoMod) form.querySelector('[name="email"]').value = sessaoMod.email || "";
+  }
+  form.addEventListener("click", e => { if (e.target.closest("[data-trocar]")) { Sessao.limpar(); location.href = "conta.html?voltar=divulgar"; } });
+  verConta();
+  // botão do topo: "Entrar" ou o primeiro nome
+  const bc = $("#btnConta");
+  if (bc) Sessao.obter().then(s => { if (s) { bc.classList.add("ligado"); bc.querySelector("span").textContent = (s.nome || "A minha conta").split(" ")[0]; } }).catch(() => { });
+
   function mudarTipo(novo) {
     tipo = novo; seg.dataset.on = novo;
     [...seg.querySelectorAll("button")].forEach(b => { const on = b.dataset.tipo === novo; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
@@ -477,7 +499,7 @@ const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac
   mudarTipo("evento");
 
   // Reduz a imagem no próprio telemóvel (máx. 1600 px, JPEG) e envia para o Storage
-  async function enviarImagem(f) {
+  async function enviarImagem(f, cab = cabecalhos) {
     if (!f || !f.size) return null;
     if (f.size > 5 * 1024 * 1024) throw new Error("A imagem tem mais de 5 MB. Escolhe uma mais leve.");
     const img = await createImageBitmap(f); const esc_ = Math.min(1, 1600 / Math.max(img.width, img.height));
@@ -485,7 +507,7 @@ const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac
     c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
     const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .82));
     const nome = `envios/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-    const r = await fetch(`${ENVIO.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { ...cabecalhos, "Content-Type": "image/jpeg", "x-upsert": "false" }, body: blob });
+    const r = await fetch(`${ENVIO.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { ...cab, "Content-Type": "image/jpeg", "x-upsert": "false" }, body: blob });
     if (!r.ok) throw new Error("Não foi possível enviar a imagem. Tenta sem imagem ou com outra.");
     return `${ENVIO.url}/storage/v1/object/public/imagens/${nome}`;
   }
@@ -519,17 +541,22 @@ const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac
         ? { tipo, titulo: v("titulo"), categoria: v("categoria"), concelho: v("concelho"), local: v("local"), data: v("data"), hora: v("hora"), descricao: v("descricao"), link: v("link"), ...rec,
             tags: (v("tags") || "").split(",").map(t => t.trim().toLowerCase().replace(/^#/, "").slice(0, 24)).filter(Boolean).slice(0, 8) }
         : { tipo, titulo: v("nome_artistico"), categoria: v("area"), concelho: v("concelho_artista"), descricao: v("bio"), site: v("site"), rede: v("rede") };
-      dados.responsavel = v("responsavel"); dados.email = v("email");
-      dados.imagem = await enviarImagem(fd.get("imagem"));
-      const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { ...cabecalhos, ...(sessaoMod ? { Authorization: `Bearer ${sessaoMod.access_token}` } : {}), "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(dados) });
-      if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(/limite/.test(t) ? "Já recebemos várias submissões deste email na última hora. Tenta mais tarde." : "Não foi possível enviar agora. Tenta outra vez daqui a pouco."); }
-      $("#formOkTexto").textContent = sessaoMod ? "Publicado. Como tens sessão de moderação aberta, já está no site e na app." : tipo === "evento" ? "Recebemos o teu evento. Pode aparecer já na agenda ou passar por uma revisão rápida da equipa antes de ser publicado." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
+      const sessao = sessaoMod || await Sessao.obter();
+      if (!sessao) { await verConta(); throw new Error("A tua sessão terminou. Entra outra vez para enviar."); }
+      dados.responsavel = v("responsavel"); dados.email = sessao.email || v("email");
+      const autorizado = { ...cabecalhos, Authorization: `Bearer ${sessao.access_token}` };
+      dados.imagem = await enviarImagem(fd.get("imagem"), autorizado);
+      const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { ...autorizado, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(dados) });
+      if (r.status === 401) { Sessao.limpar(); await verConta(); throw new Error("A tua sessão terminou. Entra outra vez para enviar."); }
+      if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(/limite/.test(t) ? "Já recebemos várias publicações tuas na última hora. Tenta mais tarde." : "Não foi possível enviar agora. Tenta outra vez daqui a pouco."); }
+      $("#formOkTexto").textContent = sessaoMod ? "Publicado. Como tens sessão de moderação aberta, já está no site e na app." : `A equipa vai rever ${tipo === "evento" ? "o teu evento" : "o teu portfólio"} e vais receber um email em ${sessao.email} quando estiver publicado. Podes acompanhar em "A minha conta".`;
+      ok.querySelector('a[href="conta.html"]').hidden = !!sessaoMod;
       form.hidden = true; ok.hidden = false; ok.scrollIntoView({ behavior: "smooth", block: "center" });
       avisar("Enviado com sucesso");
     } catch (err) { erro.textContent = err.message || "Algo correu mal. Tenta outra vez."; erro.hidden = false; }
     btn.disabled = false; btn.style.opacity = "";
   });
-  $("#formOutro").addEventListener("click", () => { form.reset(); form.classList.remove("validar"); ok.hidden = true; form.hidden = false; mudarTipo("evento"); form.scrollIntoView({ behavior: "smooth", block: "start" }); });
+  $("#formOutro").addEventListener("click", async () => { form.reset(); form.classList.remove("validar"); ok.hidden = true; mudarTipo("evento"); await verConta(); (form.hidden ? porta : form).scrollIntoView({ behavior: "smooth", block: "start" }); });
 })();
 
 /* ---------- Abertura: o logótipo surge, o vento leva-o como folha e a página vira ---------- */

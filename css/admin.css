@@ -109,3 +109,34 @@ input:focus, select:focus, textarea:focus { border-color: var(--primaria); box-s
 /* Destaques */
 .destaque-on { display: inline-block; margin-left: 8px; padding: 3px 9px; border-radius: 999px; background: #fff4b8; color: #6b5300; font-size: 12px; font-weight: 600; }
 button.destacar { background: #fff4b8; color: #6b5300; }
+
+/* Clientes e assinaturas */
+.assin { font-size: 13.5px; font-weight: 600; padding: 6px 10px; border-radius: 10px; background: var(--creme); width: fit-content; max-width: 100%; }
+.assin.ok { background: #e3f5ea; color: #13663a; }
+.assin.atraso { background: #fff1d6; color: #7a4a00; }
+.assin.sem-conta { color: var(--cinza); font-weight: 500; }
+.ligacao { background: none; border: 0; padding: 0; font: inherit; color: var(--primaria); text-decoration: underline; cursor: pointer; }
+.avisado { display: inline-block; margin-left: 4px; font-size: 12px; color: var(--ok); font-weight: 600; }
+.nota-fluxo { margin-top: 18px; text-align: center; }
+.pesquisa-clientes { flex: 1; min-width: 0; border-radius: 999px; padding: 9px 16px; font-size: 14px; }
+.cliente { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; background: #fff; border-radius: 20px; padding: 16px 18px; }
+.cliente h3 { font-family: var(--titulo); font-size: 17px; line-height: 1.25; }
+.cliente h3 i { font-style: normal; font-weight: 500; color: var(--cinza); font-family: var(--fonte); font-size: 14px; }
+.cliente .meta a { color: var(--primaria); word-break: break-all; }
+.cliente-info { display: grid; gap: 4px; min-width: 0; }
+.cliente-assin { display: grid; gap: 8px; padding: 12px; border-radius: 14px; background: var(--creme); min-width: 230px; }
+.cliente-assin > span { font-size: 13px; font-weight: 700; }
+.cliente-assin.ok > span { color: var(--ok); } .cliente-assin.atraso > span { color: #9a5b00; }
+.cliente-assin input { padding: 9px 12px; }
+.cliente-assin .acoes { margin-top: 0; }
+.cliente-assin .acoes button { padding: 8px 14px; }
+@media (max-width: 640px) {
+  .cliente { grid-template-columns: 1fr; }
+  .cliente-assin { min-width: 0; }
+  .filtros { flex-wrap: wrap; }
+  .pesquisa-clientes { flex-basis: 100%; }
+}
+.modos { overflow-x: auto; scrollbar-width: none; }
+.modos::-webkit-scrollbar { display: none; }
+.modos button { white-space: nowrap; flex: none; }
+@media (max-width: 640px) { .modos { gap: 2px; } .modos button { margin-right: 8px; font-size: 14px; } }

@@ -673,3 +673,31 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 @media (max-width: 640px) { .banner-pub .banner { aspect-ratio: 3 / 1; border-radius: 16px; } }
 .destaque .etiqueta.selo { background: var(--amarelo); color: var(--tinta); border-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
 .destaque .etiqueta b { font-weight: 700; }
+
+/* ---------- Conta de cliente: botão no topo e porta de entrada do "Divulgar" ---------- */
+.btn-conta { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 12px; border-radius: 999px; font-weight: 600; font-size: 14.5px; white-space: nowrap; transition: background .25s, color .25s; }
+.btn-conta svg { width: 22px; height: 22px; }
+.btn-conta:hover { background: rgba(127,127,127,.16); }
+.btn-conta.ligado span { max-width: 12ch; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1180px) { .btn-conta span { display: none; } .btn-conta { padding: 0; width: 44px; justify-content: center; } }
+.porta-conta { display: grid; justify-items: center; text-align: center; gap: 12px; padding: clamp(28px, 4vw, 48px) clamp(20px, 3vw, 36px); }
+.porta-conta[hidden] { display: none; }
+.porta-conta p { color: var(--cinza); max-width: 440px; }
+.porta-botoes, .form-ok-botoes { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 6px; }
+.porta-botoes .btn-contorno, .form-ok-botoes .btn-contorno { color: var(--tinta); }
+.form-ok-botoes .btn { margin-top: 0; }
+.aviso-conta { grid-column: 1 / -1; margin: -6px 0 18px; padding: 10px 14px; border-radius: 12px; background: var(--creme); font-size: 14px; color: var(--tinta-2); }
+.aviso-conta a, .aviso-conta button { color: var(--primaria); font-weight: 600; background: none; border: 0; padding: 0; font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.c input[readonly] { background: var(--creme); color: var(--cinza); }
+.divulgar-nota a { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 640px) { .porta-botoes .btn, .form-ok-botoes .btn { width: 100%; } }
+.form-ok-botoes .btn[hidden], .conta-botoes .btn[hidden], .formulario[hidden] { display: none; }
+/* topo entre 901 e 1280 px: menu mais compacto para caber o "Entrar" e o "Instalar app" */
+@media (min-width: 901px) and (max-width: 1280px) {
+  .topo-in { gap: 14px; }
+  .menu { gap: 0; }
+  .menu a { padding: 10px 10px; font-size: 14.5px; }
+  .menu a::after { left: 10px; right: 10px; }
+  .topo .btn-contorno { padding: 11px 16px; font-size: 14px; }
+}
+@media (min-width: 901px) and (max-width: 1080px) { .menu a[href="#destaques"] { display: none; } }
