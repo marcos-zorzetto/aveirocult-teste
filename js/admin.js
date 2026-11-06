@@ -22,7 +22,10 @@ async function entrar(email, senha) {
   sessao = { access_token: j.access_token, email: j.user?.email, expira: Date.now() + (j.expires_in || 3600) * 1000 };
   sessionStorage.setItem("ac-mod", JSON.stringify(sessao));
 }
-function sair() { sessao = null; sessionStorage.removeItem("ac-mod"); mostrar(); }
+function sair() {
+  if (sessao?.access_token) fetch(`${BD.url}/auth/v1/logout`, { method: "POST", keepalive: true, headers: { apikey: BD.chave, Authorization: `Bearer ${sessao.access_token}` } }).catch(() => { });
+  sessao = null; sessionStorage.removeItem("ac-mod"); mostrar();
+}
 
 // Que cartão mostrar na entrada: "entrar", "recuperar" ou "senha"
 function cartao(qual) { ["formEntrar", "formRecuperar", "formSenha"].forEach(id => { $("#" + id).hidden = id !== { entrar: "formEntrar", recuperar: "formRecuperar", senha: "formSenha" }[qual]; }); }

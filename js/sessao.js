@@ -1,11 +1,11 @@
 /* Sessão da conta de cliente · Aveiro Cult
-   Guarda a sessão do Supabase neste navegador (localStorage) e renova-a sozinha com o refresh_token,
-   para o cliente não ter de entrar outra vez sempre que volta ao site. */
+   Guarda a sessão do Supabase só neste separador (sessionStorage): fechar o navegador termina-a.
+   Renova-a sozinha com o refresh_token enquanto estiver aberta. Ao fim de 7 min sem atividade, js/inatividade.js termina-a. */
 const Sessao = (() => {
   const BD = { url: "https://otcpgtauymtavygscxfo.supabase.co", chave: "sb_publishable_DiaWIBUyBbCHnCDolUWFuw_fjONpncM" };
   const CHAVE = "ac-conta";
-  const ler = () => { try { return JSON.parse(localStorage.getItem(CHAVE) || "null"); } catch { return null; } };
-  const escrever = s => { try { s ? localStorage.setItem(CHAVE, JSON.stringify(s)) : localStorage.removeItem(CHAVE); } catch { /* modo privado: a sessão fica só nesta página */ } };
+  const ler = () => { try { return JSON.parse(sessionStorage.getItem(CHAVE) || "null"); } catch { return null; } };
+  const escrever = s => { try { s ? sessionStorage.setItem(CHAVE, JSON.stringify(s)) : sessionStorage.removeItem(CHAVE); } catch { /* modo privado: a sessão fica só nesta página */ } };
   let atual = ler();
 
   // Converte a resposta do Supabase (login, registo ou renovação) na sessão que guardamos
