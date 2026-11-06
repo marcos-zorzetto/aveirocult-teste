@@ -253,14 +253,15 @@ $$("#concelhos .concelho").forEach(b => b.addEventListener("click", () => {
 
 /* ---------- Destaques (carrossel) ---------- */
 const faixa = $("#faixaDestaques");
+let DESTAQUES_EXTRA = []; // eventos e artistas que a equipa pôs em destaque (vêm da base de dados)
 let destacadas = NOTICIAS.filter(n => n.f).slice(0, 8);
 function desenharDestaques() {
-destacadas = NOTICIAS.filter(n => n.f).slice(0, 8);
+destacadas = [...DESTAQUES_EXTRA, ...NOTICIAS.filter(n => n.f)].slice(0, 10);
 faixa.innerHTML = destacadas.map(n => `
   <a class="destaque" href="${esc(n.l)}"${n.interno ? "" : ' target="_blank" rel="noopener"'} data-tilt>
     ${imagem(n)}
-    <span class="etiqueta">${esc(n.cat)}</span>
-    <span class="data">${icone("calendario")}${formatar(n.d)}</span>
+    <span class="etiqueta${n.selo ? " selo" : ""}">${n.selo ? `<b>★ ${esc(n.selo)}</b> · ` : ""}${esc(n.cat)}</span>
+    ${n.d ? `<span class="data">${icone("calendario")}${formatar(n.d)}</span>` : ""}
     <h3>${esc(n.t)}</h3>
     <p>${esc(n.ex)}</p>
     <span class="onde">${icone("pin")}${esc(n.onde)}</span>
@@ -378,6 +379,10 @@ $("#ano").textContent = new Date().getFullYear();
 // Base de dados (Supabase). A chave abaixo é pública por desenho: só permite inserir submissões pendentes e ler o que foi aprovado.
 const ENVIO = { url: "https://otcpgtauymtavygscxfo.supabase.co", chave: "sb_publishable_DiaWIBUyBbCHnCDolUWFuw_fjONpncM", tabela: "submissoes" };
 const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}` };
+// Links de convite / recuperação de palavra-passe do Supabase chegam à página inicial: passam para o painel
+if (/access_token=|error_description=/.test(location.hash) && /type=(invite|recovery|magiclink|signup)|error/.test(location.hash)) location.replace("admin.html" + location.hash);
+// Sessão de moderação aberta neste separador (painel): o evento enviado pela equipa é publicado logo
+const sessaoMod = (() => { try { const x = JSON.parse(sessionStorage.getItem("ac-mod") || "null"); return x && x.expira > Date.now() + 60000 ? x : null; } catch { return null; } })();
 
 /* ---------- Agenda e artistas vindos da base de dados (eventos aprovados) ---------- */
 (async () => {
@@ -388,9 +393,23 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
   const [eventos, noticias, parceiros, artistas] = await Promise.all([
     ler("eventos_publicos", `select=*&proxima_data=gte.${hoje}&order=proxima_data.asc,hora.asc&limit=300`),
     ler("noticias", "select=id,slug,titulo,resumo,imagem,categoria,concelho,data&publicado=is.true&order=data.desc,id.desc&limit=60"),
-    ler("parceiros", "select=nome,link,imagem&ativo=is.true&order=ordem.asc,nome.asc&limit=24"),
-    ler("artistas_publicos", "select=*&order=criado_em.desc&limit=12")
+    ler("parceiros", "select=*&ativo=is.true&order=ordem.asc,nome.asc&limit=40"),
+    ler("artistas_publicos", "select=*&order=criado_em.desc&limit=200")
   ]);
+  // Destaques pagos/escolhidos pela equipa: eventos e artistas com "destaque_ate" no futuro aparecem primeiro no carrossel
+  const resumo = t => { t = String(t || "").replace(/\s+/g, " ").trim(); return t.length > 150 ? t.slice(0, 147) + "…" : t; };
+  DESTAQUES_EXTRA = [
+    ...eventos.filter(e => e.destaque_ate && e.destaque_ate >= hoje && e.imagem).map(e => ({ t: e.titulo.replace(/\s+/g, " "), d: e.proxima_data || e.data, cat: e.categoria || "Evento", onde: e.concelho || "", f: e.imagem, ex: resumo(e.descricao), l: `evento.html?id=${e.id}`, interno: true, selo: "Evento" })),
+    ...artistas.filter(a => a.destaque_ate && a.destaque_ate >= hoje && a.imagem).map(a => ({ t: a.titulo, d: "", cat: a.categoria || "Artista", onde: a.concelho || "", f: a.imagem, ex: resumo(a.descricao), l: `artista.html?id=${a.id}`, interno: true, selo: "Artista" }))
+  ];
+  // Banners de anunciantes (parceiros do tipo "banner"); os restantes são logótipos
+  const banners = parceiros.filter(p => p.tipo === "banner" && p.imagem), logos = parceiros.filter(p => p.tipo !== "banner");
+  const bp = $("#bannerPub");
+  if (bp && banners.length) {
+    bp.innerHTML = `<span class="banner-rotulo">Publicidade</span>` + banners.map((b, i) => `<a class="banner${i === 0 ? " ativo" : ""}" href="${esc(b.link || "empresas.html")}" ${b.link ? 'target="_blank" rel="noopener sponsored"' : ""}><img src="${esc(b.imagem)}" alt="${esc(b.nome)}" loading="lazy"></a>`).join("");
+    bp.hidden = false;
+    if (banners.length > 1 && !reduzir) { let k = 0; setInterval(() => { const bs = bp.querySelectorAll(".banner"); bs[k].classList.remove("ativo"); k = (k + 1) % bs.length; bs[k].classList.add("ativo"); }, 6000); }
+  }
   EVENTOS = eventos;
   if (!EVENTOS.length) {
     const vz = $("#agendaVazio");
@@ -400,6 +419,8 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
     const it = ["Agenda cultural do distrito de Aveiro", "Divulga o teu evento ou o teu trabalho artístico · é grátis", "Concertos, teatro, exposições, mercados e muito mais"];
     $("#ticker").innerHTML = [...it, ...it].map(t => `<span>${esc(t)}</span>`).join("");
   }
+  // botão "Ver os próximos eventos do Aveiro Cult": só aparece quando há eventos com a etiqueta #aveirocult
+  const btnAC = $("#verEventosAC"); if (btnAC) btnAC.hidden = !EVENTOS.some(e => (e.tags || []).includes("aveirocult"));
   if (EVENTOS.length) {
     mostrarTags(); mostrarAgenda();
     const it = EVENTOS.slice(0, 12).map(e => { const d = new Date((e.proxima_data || e.data) + "T12:00:00"); return `${String(d.getDate()).padStart(2, "0")} ${MESES[d.getMonth()]} · ${e.titulo}${e.concelho ? " · " + e.concelho : ""}`; });
@@ -408,16 +429,17 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
   if (noticias.length) {
     NOTICIAS.length = 0;
     noticias.forEach(n => NOTICIAS.push({ t: n.titulo, d: n.data, cat: n.categoria || "", onde: n.concelho || "", f: n.imagem || "", ex: n.resumo || "", l: `noticia.html?n=${encodeURIComponent(n.slug || n.id)}`, interno: true }));
-    desenharDestaques(); mostrar(); setTimeout(atualizarPontos, 100);
+    mostrar();
   }
+  if (noticias.length || DESTAQUES_EXTRA.length) { desenharDestaques(); setTimeout(atualizarPontos, 100); }
   const lp = $("#parceirosLista");
   if (lp) {
-    lp.innerHTML = parceiros.length ? parceiros.map(p => `<a class="parceiro" href="${esc(p.link || "#")}" target="_blank" rel="noopener" title="${esc(p.nome)}">${p.imagem ? `<img src="${esc(p.imagem)}" alt="${esc(p.nome)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))">` : `<span>${esc(p.nome)}</span>`}</a>`).join("")
+    lp.innerHTML = logos.length ? logos.map(p => `<a class="parceiro" href="${esc(p.link || "#")}" target="_blank" rel="noopener" title="${esc(p.nome)}">${p.imagem ? `<img src="${esc(p.imagem)}" alt="${esc(p.nome)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))">` : `<span>${esc(p.nome)}</span>`}</a>`).join("")
       : `<p class="parceiros-vazio">Sê a primeira empresa a apoiar a cultura do distrito.</p>`;
   }
   const sec = $("#artistas");
   if (sec && artistas.length) {
-    $("#artistasLista").innerHTML = artistas.map((a, i) => `<article class="artista" data-reveal style="--i:${i}">
+    $("#artistasLista").innerHTML = [...artistas.filter(a => a.destaque_ate && a.destaque_ate >= hoje), ...artistas.filter(a => !(a.destaque_ate && a.destaque_ate >= hoje))].slice(0, 12).map((a, i) => `<article class="artista" data-reveal style="--i:${i}">
       <a class="artista-img" href="artista.html?id=${a.id}" aria-label="${esc(a.titulo)}"><span>${icone("mic")}</span>${a.imagem ? `<img src="${esc(a.imagem)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</a>
       <div class="artista-info">
         <span class="artista-area">${esc(a.categoria || "")}${a.concelho ? " · " + esc(a.concelho) : ""}</span>
@@ -439,6 +461,7 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
   [...CATEGORIAS.filter(c => c.f).map(c => c.f), "Workshop", "Festival", "Exposição", "Literatura", "Mercado", "Outros"].forEach(c => selCat.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
   ["concelho", "concelho_artista"].forEach(n => { const s = form.querySelector(`select[name="${n}"]`); CONCELHOS.forEach(c => s.insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`)); });
   const hoje = new Date().toISOString().slice(0, 10); form.querySelector('input[name="data"]').min = hoje;
+  if (sessaoMod) form.insertAdjacentHTML("afterbegin", `<p class="aviso-mod">Sessão de moderação (${esc(sessaoMod.email || "equipa")}): o que enviares aqui é publicado de imediato. <a href="admin.html">Voltar ao painel</a></p>`);
 
   function mudarTipo(novo) {
     tipo = novo; seg.dataset.on = novo;
@@ -498,9 +521,9 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
         : { tipo, titulo: v("nome_artistico"), categoria: v("area"), concelho: v("concelho_artista"), descricao: v("bio"), site: v("site"), rede: v("rede") };
       dados.responsavel = v("responsavel"); dados.email = v("email");
       dados.imagem = await enviarImagem(fd.get("imagem"));
-      const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { ...cabecalhos, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(dados) });
+      const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}`, { method: "POST", headers: { ...cabecalhos, ...(sessaoMod ? { Authorization: `Bearer ${sessaoMod.access_token}` } : {}), "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(dados) });
       if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(/limite/.test(t) ? "Já recebemos várias submissões deste email na última hora. Tenta mais tarde." : "Não foi possível enviar agora. Tenta outra vez daqui a pouco."); }
-      $("#formOkTexto").textContent = tipo === "evento" ? "Recebemos o teu evento. Pode aparecer já na agenda ou passar por uma revisão rápida da equipa antes de ser publicado." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
+      $("#formOkTexto").textContent = sessaoMod ? "Publicado. Como tens sessão de moderação aberta, já está no site e na app." : tipo === "evento" ? "Recebemos o teu evento. Pode aparecer já na agenda ou passar por uma revisão rápida da equipa antes de ser publicado." : "O teu portfólio vai ser revisto e, assim que for aprovado, aparece na secção de artistas do site e da app.";
       form.hidden = true; ok.hidden = false; ok.scrollIntoView({ behavior: "smooth", block: "center" });
       avisar("Enviado com sucesso");
     } catch (err) { erro.textContent = err.message || "Algo correu mal. Tenta outra vez."; erro.hidden = false; }

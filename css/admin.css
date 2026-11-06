@@ -90,3 +90,22 @@ input:focus, select:focus, textarea:focus { border-color: var(--primaria); box-s
 .auto { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--cinza); margin-left: auto; }
 .auto select { width: auto; padding: 8px 32px 8px 12px; border-radius: 999px; font-size: 13px; }
 @media (max-width: 640px) { .filtros { flex-wrap: wrap; } .auto { margin-left: 0; } }
+
+/* Recuperar / criar palavra-passe e ações do topo */
+.cartao .ligacao { justify-self: center; margin-top: 2px; }
+.ok { padding: 10px 14px; border-radius: 10px; background: #e7f6ec; color: #17633a; font-size: 14px; }
+.topo-acoes { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.topo-acoes .btn-sair { text-decoration: none; }
+.topo-acoes [hidden] { display: none; }
+@media (max-width: 640px) { .topo-tit { display: none; } .topo-acoes .btn-sair { padding: 7px 10px; font-size: 12.5px; } }
+.topo-acoes .btn-sair { margin-left: 0; color: var(--tinta); }
+
+/* Notícia que também é evento */
+.tambem-evento { border: 1px dashed var(--linha); border-radius: 14px; padding: 14px; display: grid; gap: 12px; }
+.campos-evento { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.campos-evento[hidden] { display: none; }
+.campos-evento .c-2 { grid-column: 1 / -1; }
+@media (max-width: 640px) { .campos-evento { grid-template-columns: 1fr; } }
+/* Destaques */
+.destaque-on { display: inline-block; margin-left: 8px; padding: 3px 9px; border-radius: 999px; background: #fff4b8; color: #6b5300; font-size: 12px; font-weight: 600; }
+button.destacar { background: #fff4b8; color: #6b5300; }

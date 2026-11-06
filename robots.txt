@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /migracao/
 Sitemap: https://marcos-zorzetto.github.io/aveirocult-teste/sitemap.xml

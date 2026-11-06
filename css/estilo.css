@@ -139,7 +139,8 @@ body.com-barra .topo { top: 60px; }
 /* ---------- Hero ---------- */
 .hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; color: #fff; overflow: hidden; background: var(--tinta); }
 .hero-fundo { position: absolute; inset: 0; }
-.hero-fundo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s ease; will-change: transform, opacity; }
+.hero-fundo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s ease; }
+.hero-fundo img:not(.ativo):not(.saindo) { visibility: hidden; transition: opacity 1.6s ease, visibility 0s 1.6s; }
 .hero-fundo img.ativo { opacity: 1; animation: kenburns 9s ease-out forwards; }
 @keyframes kenburns { from { transform: scale(1) translate(0, 0); } to { transform: scale(1.14) translate(-1.5%, 1%); } }
 .hero-veu { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,16,.55) 0%, rgba(10,10,16,.15) 35%, rgba(10,10,16,.55) 70%, rgba(10,10,16,.95) 100%), linear-gradient(90deg, rgba(10,10,16,.6), transparent 60%); }
@@ -287,9 +288,10 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 /* ---------- App ---------- */
 .app-sec { position: relative; background: var(--tinta); color: #fff; overflow: hidden; padding-block: clamp(80px, 10vw, 130px); }
 .app-sec::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1px); background-size: 28px 28px; mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%); }
-.blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .55; animation: flutuar 14s ease-in-out infinite alternate; }
-.blob.b1 { width: 520px; height: 520px; background: var(--primaria); top: -160px; right: -120px; }
-.blob.b2 { width: 420px; height: 420px; background: var(--amarelo); opacity: .3; bottom: -160px; left: -100px; animation-delay: -6s; }
+/* brilhos feitos com gradiente (o filter: blur gigante esgotava a memória gráfica do iPhone) */
+.blob { position: absolute; border-radius: 50%; opacity: .55; animation: flutuar 14s ease-in-out infinite alternate; }
+.blob.b1 { width: 820px; height: 820px; background: radial-gradient(closest-side, var(--primaria), rgba(0,47,163,.35) 55%, transparent); top: -310px; right: -270px; }
+.blob.b2 { width: 720px; height: 720px; background: radial-gradient(closest-side, var(--amarelo), rgba(255,222,4,.3) 55%, transparent); opacity: .3; bottom: -310px; left: -250px; animation-delay: -6s; }
 @keyframes flutuar { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, 60px) scale(1.15); } }
 .app-in { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: clamp(40px, 6vw, 90px); }
 .app-texto h2 { font-size: clamp(34px, 4.4vw, 54px); }
@@ -371,7 +373,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .cartao-com em svg { transition: transform .3s var(--suave); }
 
 .promo { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 60px; padding: clamp(28px, 4vw, 44px); border-radius: 28px; background: var(--tinta); color: #fff; position: relative; overflow: hidden; }
-.promo::after { content: ""; position: absolute; width: 360px; height: 360px; border-radius: 50%; background: var(--primaria); filter: blur(90px); opacity: .5; right: -100px; top: -140px; }
+.promo::after { content: ""; position: absolute; width: 640px; height: 640px; border-radius: 50%; background: radial-gradient(closest-side, var(--primaria), rgba(0,47,163,.3) 55%, transparent); opacity: .5; right: -240px; top: -280px; }
 .promo > * { position: relative; }
 .promo p { color: #b9b9c8; margin-top: 6px; }
 .promo .btn-escuro { background: #fff; color: var(--tinta); }
@@ -436,7 +438,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .app-in { grid-template-columns: 1fr; }
   .telemovel-wrap { padding: 20px 0 10px; }
   .telemovel { width: 260px; }
-  .comunidade, .rodape-in { grid-template-columns: 1fr; }
+  .rodape-in { grid-template-columns: 1fr; }
   .promo { flex-direction: column; align-items: flex-start; }
   .rodape { padding-bottom: 120px; }
   .nav-app { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 90; background: rgba(255,255,255,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--linha); justify-content: space-around; padding: 8px 4px calc(8px + env(safe-area-inset-bottom)); }
@@ -449,6 +451,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
   .nav-app button span { color: var(--primaria); }
 }
 @media (max-width: 640px) {
+  .comunidade { grid-template-columns: 1fr; }
   .caixa, .hero-in { width: min(var(--largura), 100% - 32px); }
   .faixa { padding-inline: 16px; gap: 14px; scroll-padding-inline: 16px; }
   .destaque { flex-basis: calc(100% - 32px); padding: 18px; border-radius: 20px; }
@@ -630,3 +633,43 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 /* Estados de erro/vazio com ação (ligação dentro do texto) */
 .vazio a, .vazio .ligacao { background: none; border: 0; padding: 0; font: inherit; color: var(--primaria); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .vazio a:hover, .vazio .ligacao:hover { color: var(--primaria-escura); }
+
+/* Ecrãs tácteis (iPhone/Android): menos camadas gráficas pesadas.
+   O Safari do iPhone tem pouca memória gráfica; com muitos desfoques ele deixa partes do ecrã em branco
+   ("cortadas") e chega a recarregar a página sozinho. Aqui trocamos os desfoques por cores sólidas. */
+@media (hover: none) {
+  .contem::after { filter: none; inset: 0; opacity: .5; background-size: 1600% 1600%; background-position: center; }
+  .chips button, .destaque .etiqueta, .btn-contorno { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .chips button { background: rgba(20,20,28,.55); }
+  .destaque .etiqueta { background: rgba(15,15,20,.55); }
+  .pesquisa { backdrop-filter: none; -webkit-backdrop-filter: none; background: #fff; }
+  .blob { animation: none; }
+  .folha { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(10,10,16,.7); }
+}
+
+/* Projetos do Aveiro Cult (página inicial) */
+.projetos-sec { background: var(--creme); }
+.projetos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.projeto { position: relative; padding: 28px 26px; border-radius: 24px; background: #fff; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 0 var(--linha); }
+.projeto .marca { font-family: var(--titulo); font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--primaria); }
+.projeto b { font-family: var(--titulo); font-size: 20px; line-height: 1.2; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.projeto p { color: var(--cinza); font-size: 15px; line-height: 1.5; }
+.projeto.destaque-fema { background: var(--tinta); color: #fff; }
+.projeto.destaque-fema .marca { color: var(--amarelo); }
+.projeto.destaque-fema p { color: #b9b9c8; }
+.projetos-acoes { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+@media (max-width: 1100px) { .projetos { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .projetos { grid-template-columns: 1fr; gap: 14px; } .projetos-acoes .btn { width: 100%; justify-content: center; } }
+.aviso-mod { margin-bottom: 16px; padding: 12px 16px; border-radius: 14px; background: #e8eefc; color: var(--primaria-escura); font-size: 14.5px; }
+.aviso-mod a { color: inherit; font-weight: 600; text-decoration: underline; }
+
+/* Banner de anunciante */
+.banner-pub { position: relative; display: grid; margin-block: clamp(10px, 2vw, 24px) 0; }
+.banner-pub[hidden] { display: none; }
+.banner-pub .banner { grid-area: 1 / 1; display: block; border-radius: 22px; overflow: hidden; aspect-ratio: 4 / 1; background: var(--creme); opacity: 0; visibility: hidden; transition: opacity .8s, visibility 0s .8s; }
+.banner-pub .banner.ativo { opacity: 1; visibility: visible; transition: opacity .8s; }
+.banner-pub img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.banner-rotulo { position: absolute; z-index: 1; top: 10px; right: 12px; padding: 3px 9px; border-radius: 999px; background: rgba(15,15,20,.6); color: #fff; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+@media (max-width: 640px) { .banner-pub .banner { aspect-ratio: 3 / 1; border-radius: 16px; } }
+.destaque .etiqueta.selo { background: var(--amarelo); color: var(--tinta); border-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.destaque .etiqueta b { font-weight: 700; }

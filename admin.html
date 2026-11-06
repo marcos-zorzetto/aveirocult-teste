@@ -9,14 +9,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=6">
+  <link rel="stylesheet" href="css/admin.css?v=8">
 </head>
 <body>
 
 <header class="topo">
   <a class="marca" href="./"><span class="a">Aveiro</span> <span class="c">Cult</span></a>
   <span class="topo-tit">Moderação</span>
-  <button class="btn-sair" id="sair" type="button" hidden>Sair</button>
+  <span class="topo-acoes">
+    <a class="btn-sair" id="publicarEvento" href="./#divulgar" hidden>+ Publicar evento</a>
+    <button class="btn-sair" id="mudarSenha" type="button" hidden>Palavra-passe</button>
+    <button class="btn-sair" id="sair" type="button" hidden>Sair</button>
+  </span>
 </header>
 
 <main>
@@ -29,6 +33,25 @@
       <label><span>Palavra-passe</span><input name="senha" type="password" required autocomplete="current-password"></label>
       <p class="erro" id="erroEntrar" hidden></p>
       <button class="btn" type="submit">Entrar</button>
+      <button class="ligacao" id="abrirRecuperar" type="button">Esqueci-me da palavra-passe</button>
+    </form>
+    <form class="cartao" id="formRecuperar" hidden>
+      <h1>Recuperar acesso</h1>
+      <p>Escreve o email da tua conta de moderação. Enviamos um link para criares uma palavra-passe nova.</p>
+      <label><span>Email</span><input name="email" type="email" required autocomplete="username"></label>
+      <p class="erro" id="erroRecuperar" hidden></p>
+      <p class="ok" id="okRecuperar" hidden>Se o email tiver conta, o link chega dentro de minutos. Vê também o spam.</p>
+      <button class="btn" type="submit">Enviar link</button>
+      <button class="ligacao" id="voltarEntrar" type="button">Voltar a entrar</button>
+    </form>
+    <form class="cartao" id="formSenha" hidden>
+      <h1 id="tituloSenha">Criar palavra-passe</h1>
+      <p>Escolhe uma palavra-passe com pelo menos 10 caracteres. Vais usá-la sempre que entrares no painel.</p>
+      <label><span>Nova palavra-passe</span><input name="senha" type="password" required minlength="10" autocomplete="new-password"></label>
+      <label><span>Repetir palavra-passe</span><input name="senha2" type="password" required minlength="10" autocomplete="new-password"></label>
+      <p class="erro" id="erroSenha" hidden></p>
+      <button class="btn" type="submit">Guardar e entrar</button>
+      <button class="ligacao" id="cancelarSenha" type="button" hidden>Cancelar</button>
     </form>
   </section>
 
@@ -73,6 +96,17 @@
         <label><span>Ligação externa <small>(opcional)</small></span><input name="link_original" type="url" placeholder="https://"></label>
         <label class="c-2"><span>Imagem <small>(JPEG, PNG ou WebP até 5 MB; fica reduzida a 1600 px)</small></span><input name="imagem" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="imagem_atual"></label>
         <label class="c-check c-2"><input name="publicado" type="checkbox"><span>Publicada (visível no site e na app)</span></label>
+        <fieldset class="c-2 tambem-evento">
+          <label class="c-check"><input name="e_evento" type="checkbox"><span><b>Esta notícia também é um evento</b>: mostrar na agenda</span></label>
+          <div class="campos-evento" hidden>
+            <label><span>Dia do evento *</span><input name="ev_data" type="date"></label>
+            <label><span>Hora</span><input name="ev_hora" type="time"></label>
+            <label><span>Último dia <small>(se durar vários dias)</small></span><input name="ev_fim" type="date"></label>
+            <label><span>Local</span><input name="ev_local" type="text" maxlength="120" placeholder="Ex.: Teatro Aveirense"></label>
+            <label class="c-2"><span>Tags <small>(separadas por vírgula; usa "aveirocult" nos eventos do Aveiro Cult)</small></span><input name="ev_tags" type="text" maxlength="200"></label>
+            <p class="nota c-2">O evento é criado já aprovado, com o título, o resumo, a imagem, a categoria e o concelho desta notícia, e liga para ela.</p>
+          </div>
+        </fieldset>
         <div class="acoes c-2">
           <button class="btn" type="submit">Guardar</button>
           <button class="btn-leve" type="button" id="cancelarNoticia">Cancelar</button>
@@ -93,10 +127,12 @@
         <input type="hidden" name="id">
         <h3 id="editorParceiroTitulo">Novo parceiro</h3>
         <label><span>Nome da empresa *</span><input name="nome" type="text" required maxlength="120"></label>
+        <label><span>Tipo</span><select name="tipo"><option value="logo">Logótipo na secção de parceiros</option><option value="banner">Banner publicitário (faixa larga)</option></select></label>
+        <label><span>Pago até <small>(depois desta data deixa de aparecer; vazio = sem fim)</small></span><input name="ate" type="date"></label>
         <label><span>Plano</span><select name="plano"><option value="">Sem plano</option><option>Apoiante</option><option>Bronze</option><option>Prata</option><option>Ouro</option><option>Platina</option><option>Parceria cultural</option></select></label>
         <label><span>Site ou rede social</span><input name="link" type="url" placeholder="https://"></label>
         <label><span>Ordem <small>(menor aparece primeiro)</small></span><input name="ordem" type="number" value="10" min="0" max="999"></label>
-        <label class="c-2"><span>Logótipo <small>(PNG com fundo transparente fica melhor; até 5 MB)</small></span><input name="imagem" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="imagem_atual"></label>
+        <label class="c-2"><span>Imagem <small>(logótipo: PNG com fundo transparente; banner: 1200 × 300 px, JPEG ou PNG; até 5 MB)</small></span><input name="imagem" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="imagem_atual"></label>
         <label class="c-check c-2"><input name="ativo" type="checkbox" checked><span>Ativo (visível no site e na app)</span></label>
         <div class="acoes c-2">
           <button class="btn" type="submit">Guardar</button>
@@ -110,6 +146,6 @@
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="js/admin.js?v=7"></script>
+<script src="js/admin.js?v=9"></script>
 </body>
 </html>

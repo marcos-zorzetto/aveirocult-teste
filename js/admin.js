@@ -22,11 +22,67 @@ async function entrar(email, senha) {
 }
 function sair() { sessao = null; sessionStorage.removeItem("ac-mod"); mostrar(); }
 
+// Que cartão mostrar na entrada: "entrar", "recuperar" ou "senha"
+function cartao(qual) { ["formEntrar", "formRecuperar", "formSenha"].forEach(id => { $("#" + id).hidden = id !== { entrar: "formEntrar", recuperar: "formRecuperar", senha: "formSenha" }[qual]; }); }
+
 function mostrar() {
-  const ok = sessao && sessao.expira > Date.now();
-  $("#entrada").hidden = !!ok; $("#painel").hidden = !ok; $("#sair").hidden = !ok;
+  const ok = !tokenTemp && sessao && sessao.expira > Date.now(); // com um link de convite/recuperação aberto, mostra primeiro o "criar palavra-passe"
+  $("#entrada").hidden = !!ok; $("#painel").hidden = !ok; ["sair", "mudarSenha", "publicarEvento"].forEach(id => $("#" + id).hidden = !ok);
   if (ok) { carregar(); lerAuto(); } else if (sessao) sair();
 }
+
+/* ---------- Primeiro acesso e recuperação ----------
+   O link do email do Supabase (convite ou recuperação) traz um token no endereço (#access_token=...&type=recovery).
+   Com esse token a pessoa escolhe a palavra-passe e entra logo. */
+let tokenTemp = null;
+(() => {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (!h.toString()) return;
+  history.replaceState(null, "", location.pathname + location.search); // tira o token da barra de endereço
+  if (h.get("error_description")) { cartao("entrar"); const e = $("#erroEntrar"); e.textContent = /expired|invalid/i.test(h.get("error_description")) ? "O link expirou ou já foi usado. Pede um novo em “Esqueci-me da palavra-passe”." : h.get("error_description"); e.hidden = false; return; }
+  if (h.get("access_token") && /invite|recovery|magiclink|signup/.test(h.get("type") || "")) {
+    tokenTemp = { access_token: h.get("access_token"), expira: Date.now() + (Number(h.get("expires_in")) || 3600) * 1000 };
+    $("#tituloSenha").textContent = h.get("type") === "recovery" ? "Nova palavra-passe" : "Criar palavra-passe";
+    cartao("senha");
+  }
+})();
+
+async function guardarSenha(token, senha) {
+  const r = await fetch(`${BD.url}/auth/v1/user`, { method: "PUT", headers: { apikey: BD.chave, Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ password: senha }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(/same|different/i.test(j.msg || j.error_description || "") ? "A palavra-passe nova tem de ser diferente da anterior." : /weak|short|least/i.test(j.msg || "") ? "Palavra-passe fraca: usa pelo menos 10 caracteres, com letras e números." : (j.msg || j.error_description || "Não foi possível guardar a palavra-passe."));
+  return j;
+}
+
+$("#formSenha").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target, erro = $("#erroSenha"), b = f.querySelector('[type="submit"]'); erro.hidden = true;
+  if (f.senha.value.length < 10) { erro.textContent = "Usa pelo menos 10 caracteres."; erro.hidden = false; return; }
+  if (f.senha.value !== f.senha2.value) { erro.textContent = "As duas palavras-passe não são iguais."; erro.hidden = false; return; }
+  const token = tokenTemp?.access_token || sessao?.access_token; if (!token) { cartao("entrar"); return; }
+  b.disabled = true;
+  try {
+    const u = await guardarSenha(token, f.senha.value);
+    if (tokenTemp) { sessao = { access_token: tokenTemp.access_token, email: u.email, expira: tokenTemp.expira }; sessionStorage.setItem("ac-mod", JSON.stringify(sessao)); tokenTemp = null; }
+    f.reset(); cartao("entrar"); mostrar(); avisar("Palavra-passe guardada.");
+  } catch (err) { erro.textContent = err.message; erro.hidden = false; }
+  b.disabled = false;
+});
+$("#abrirRecuperar").addEventListener("click", () => { cartao("recuperar"); $("#formRecuperar").email.value = $("#formEntrar").email.value; });
+$("#voltarEntrar").addEventListener("click", () => cartao("entrar"));
+$("#formRecuperar").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target, b = f.querySelector('[type="submit"]'), erro = $("#erroRecuperar"), ok = $("#okRecuperar"); erro.hidden = ok.hidden = true; b.disabled = true;
+  try {
+    const volta = location.href.replace(/[?#].*$/, "");
+    const r = await fetch(`${BD.url}/auth/v1/recover?redirect_to=${encodeURIComponent(volta)}`, { method: "POST", headers: { apikey: BD.chave, "Content-Type": "application/json" }, body: JSON.stringify({ email: f.email.value.trim() }) });
+    if (r.status === 429) throw new Error("Já pediste um link há pouco. Espera uns minutos e tenta de novo.");
+    if (!r.ok) throw new Error("Não foi possível enviar o email agora.");
+    ok.hidden = false;
+  } catch (err) { erro.textContent = err.message; erro.hidden = false; }
+  b.disabled = false;
+});
+// Mudar a palavra-passe com a sessão aberta
+$("#mudarSenha").addEventListener("click", () => { $("#painel").hidden = true; $("#entrada").hidden = false; $("#tituloSenha").textContent = "Mudar palavra-passe"; $("#cancelarSenha").hidden = false; cartao("senha"); });
+$("#cancelarSenha").addEventListener("click", () => { $("#cancelarSenha").hidden = true; cartao("entrar"); mostrar(); });
 
 async function contar() {
   const r = await fetch(`${BD.url}/rest/v1/submissoes?select=estado`, { headers: cab() });
@@ -46,7 +102,7 @@ async function carregar() {
     <div class="item-img">${i.imagem ? `<a href="${esc(i.imagem)}" target="_blank" rel="noopener"><img src="${esc(i.imagem)}" alt="" onerror="this.parentElement.parentElement.textContent='imagem indisponível'"></a>` : "sem imagem"}</div>
     <div class="item-corpo">
       <span class="etiq">${i.tipo === "evento" ? "Evento" : "Artista"} <i>· ${esc(i.categoria || "")}${i.concelho ? " · " + esc(i.concelho) : ""}</i></span>
-      <h3>${esc(i.titulo)}</h3>
+      <h3>${esc(i.titulo)}${emDestaque(i) ? `<span class="destaque-on">★ Em destaque até ${dataPt(i.destaque_ate)}</span>` : ""}</h3>
       ${i.tipo === "evento" ? `<p class="meta">${i.recorrencia === "semanal" ? `<b>Todas as semanas</b> (${(i.dias_semana || []).map(d => ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][d]).join(", ")})${i.repete_ate ? " até " + dataPt(i.repete_ate) : ""} · desde ${dataPt(i.data)}` : `${dataPt(i.data)}${i.data_fim && i.data_fim.slice(0, 10) !== i.data ? " a " + dataPt(i.data_fim.slice(0, 10)) : ""}`}${i.hora ? " · " + esc(i.hora.slice(0, 5)) : ""}${i.local ? " · " + esc(i.local) : ""}</p>` : ""}
       <p class="desc">${esc(i.descricao || "")}</p>
       ${i.tipo === "evento" ? `<p class="tags">${(i.tags || []).length ? i.tags.map(t => `<span>#${esc(t)}</span>`).join("") : "<i>sem tags</i>"} <button class="ligacao" data-acao="tags">editar tags</button></p>` : ""}
@@ -56,6 +112,7 @@ async function carregar() {
         ${i.estado !== "aprovado" ? `<button class="aprovar" data-acao="aprovado">Aprovar e publicar</button>` : ""}
         ${i.estado !== "rejeitado" ? `<button class="rejeitar" data-acao="rejeitado">Rejeitar</button>` : ""}
         ${i.estado !== "pendente" ? `<button class="pendente" data-acao="pendente">Voltar a pendente</button>` : ""}
+        ${i.estado === "aprovado" ? (emDestaque(i) ? `<button class="destacar" data-acao="sem-destaque">Tirar destaque</button>` : `<button class="destacar" data-acao="destacar">★ Destacar</button>`) : ""}
         <button class="apagar" data-acao="apagar">Apagar</button>
       </div>
     </div>
@@ -63,7 +120,21 @@ async function carregar() {
   contar();
 }
 
+const hojeIso = () => new Date().toISOString().slice(0, 10);
+const emDestaque = i => i.destaque_ate && i.destaque_ate >= hojeIso();
 async function mudar(id, acao) {
+  if (acao === "destacar" || acao === "sem-destaque") {
+    let ate = null;
+    if (acao === "destacar") {
+      const sug = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+      const r0 = prompt("Destacar na página inicial até que dia? (AAAA-MM-DD)", sug); if (r0 === null) return;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(r0.trim()) || r0.trim() < hojeIso()) return avisar("Data inválida. Usa o formato AAAA-MM-DD, a partir de hoje.");
+      ate = r0.trim();
+    }
+    const r = await fetch(`${BD.url}/rest/v1/submissoes?id=eq.${id}`, { method: "PATCH", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify({ destaque_ate: ate }) });
+    if (!r.ok) return avisar(r.status === 400 ? "Falta atualizar a base de dados (script de 6 nov)." : "Não foi possível guardar.");
+    avisar(ate ? "Em destaque na página inicial até " + dataPt(ate) + "." : "Destaque retirado."); return carregar();
+  }
   if (acao === "apagar") {
     if (!confirm("Apagar esta submissão de vez? Não dá para recuperar.")) return;
     const r = await fetch(`${BD.url}/rest/v1/submissoes?id=eq.${id}`, { method: "DELETE", headers: cab() });
@@ -143,8 +214,10 @@ async function carregarNoticias() {
   </article>`).join("");
   $("#listaNoticias").dataset.itens = JSON.stringify(itens);
 }
+const camposEvento = editor.querySelector(".campos-evento");
+editor.e_evento.addEventListener("change", () => { camposEvento.hidden = !editor.e_evento.checked; editor.ev_data.required = editor.e_evento.checked; });
 function abrirEditor(n) {
-  editor.reset(); editor.hidden = false;
+  editor.reset(); editor.hidden = false; camposEvento.hidden = true; editor.ev_data.required = false;
   editor.id.value = n?.id || ""; editor.imagem_atual.value = n?.imagem || "";
   $("#editorTitulo").textContent = n ? "Editar notícia" : "Nova notícia";
   if (n) { ["titulo", "resumo", "corpo", "categoria", "concelho", "data", "link_original"].forEach(k => editor[k].value = n[k] || ""); editor.publicado.checked = !!n.publicado; }
@@ -164,6 +237,21 @@ async function enviarImagemNoticia(f, pasta = "noticias", maxLado = 1600, manter
   if (!r.ok) throw new Error("Não foi possível enviar a imagem.");
   return `${BD.url}/storage/v1/object/public/imagens/${nome}`;
 }
+// Cria na agenda um evento a partir da notícia (fica aprovado logo: a equipa é moderadora)
+async function criarEventoDaNoticia(n) {
+  if (!editor.ev_data.value) throw new Error("Falta o dia do evento.");
+  if (editor.ev_fim.value && editor.ev_fim.value < editor.ev_data.value) throw new Error("O último dia tem de ser depois do primeiro.");
+  const base = location.href.replace(/[^/]*([?#].*)?$/, "");
+  const ev = { tipo: "evento", titulo: n.titulo.slice(0, 120), descricao: [n.resumo, n.corpo].filter(Boolean).join("\n\n").slice(0, 4000), categoria: n.categoria, concelho: n.concelho,
+    local: editor.ev_local.value.trim() || null, data: editor.ev_data.value, hora: editor.ev_hora.value || null, data_fim: editor.ev_fim.value || null, recorrencia: "nenhuma",
+    imagem: n.imagem, link: n.link_original || (n.slug ? `${base}noticia.html?n=${encodeURIComponent(n.slug)}` : null), responsavel: "Equipa Aveiro Cult", email: sessao.email,
+    tags: editor.ev_tags.value.split(",").map(t => t.trim().toLowerCase().replace(/^#/, "").slice(0, 24)).filter(Boolean).slice(0, 8) };
+  const r = await fetch(`${BD.url}/rest/v1/submissoes`, { method: "POST", headers: { ...cab(), Prefer: "return=representation" }, body: JSON.stringify(ev) });
+  if (!r.ok) throw new Error("A notícia foi guardada, mas o evento não. Tenta de novo ou cria o evento pelo formulário.");
+  const criado = (await r.json())[0];
+  if (criado && criado.estado !== "aprovado") // antes do script de 6 nov o evento entra pendente: aprova-se aqui
+    await fetch(`${BD.url}/rest/v1/submissoes?id=eq.${criado.id}`, { method: "PATCH", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify({ estado: "aprovado", revisto_em: new Date().toISOString(), nota_moderacao: "criado a partir de uma notícia" }) });
+}
 $("#novaNoticia").addEventListener("click", () => abrirEditor(null));
 $("#cancelarNoticia").addEventListener("click", () => { editor.hidden = true; });
 $("#atualizarNoticias").addEventListener("click", carregarNoticias);
@@ -176,9 +264,12 @@ editor.addEventListener("submit", async e => {
     const nova = await enviarImagemNoticia(editor.imagem.files[0]);
     dados.imagem = nova || editor.imagem_atual.value || null;
     if (!id) dados.slug = slugDe(dados.titulo) + "-" + Date.now().toString(36).slice(-4);
-    const r = await fetch(`${BD.url}/rest/v1/noticias${id ? "?id=eq." + id : ""}`, { method: id ? "PATCH" : "POST", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify(dados) });
+    const r = await fetch(`${BD.url}/rest/v1/noticias${id ? "?id=eq." + id : ""}`, { method: id ? "PATCH" : "POST", headers: { ...cab(), Prefer: "return=representation" }, body: JSON.stringify(dados) });
     if (!r.ok) throw new Error("Não foi possível guardar.");
-    avisar(dados.publicado ? "Notícia publicada." : "Rascunho guardado."); editor.hidden = true; carregarNoticias();
+    const guardada = (await r.json().catch(() => []))[0] || {};
+    let extra = "";
+    if (editor.e_evento.checked) { await criarEventoDaNoticia({ ...dados, slug: guardada.slug || dados.slug }); extra = " O evento já está na agenda."; }
+    avisar((dados.publicado ? "Notícia publicada." : "Rascunho guardado.") + extra); editor.hidden = true; carregarNoticias();
   } catch (err) { avisar(err.message || "Algo correu mal."); }
   b.disabled = false;
 });
@@ -210,7 +301,7 @@ async function carregarParceiros() {
     <div class="item-img">${p.imagem ? `<img src="${esc(p.imagem)}" alt="" style="object-fit:contain;padding:10px" onerror="this.parentElement.textContent='imagem indisponível'">` : "sem logótipo"}</div>
     <div class="item-corpo">
       <span class="estado ${p.ativo ? "" : "rascunho"}">${p.ativo ? "Ativo" : "Inativo"}</span>
-      <span class="etiq">${esc(p.plano || "Sem plano")} · ordem ${p.ordem ?? 0}</span>
+      <span class="etiq">${p.tipo === "banner" ? "Banner" : "Logótipo"} · ${esc(p.plano || "Sem plano")} · ordem ${p.ordem ?? 0}${p.ate ? ` · ${p.ate >= hojeIso() ? "pago até" : "expirou a"} ${dataPt(p.ate)}` : ""}</span>
       <h3>${esc(p.nome)}</h3>
       <p class="links">${p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.link)}</a>` : ""}</p>
       <div class="acoes">
@@ -226,7 +317,7 @@ function abrirEditorParceiro(p) {
   editorP.reset(); editorP.hidden = false;
   editorP.id.value = p?.id || ""; editorP.imagem_atual.value = p?.imagem || "";
   $("#editorParceiroTitulo").textContent = p ? "Editar parceiro" : "Novo parceiro";
-  if (p) { editorP.nome.value = p.nome || ""; editorP.plano.value = p.plano || ""; editorP.link.value = p.link || ""; editorP.ordem.value = p.ordem ?? 10; editorP.ativo.checked = !!p.ativo; }
+  if (p) { editorP.tipo.value = p.tipo || "logo"; editorP.ate.value = p.ate || ""; editorP.nome.value = p.nome || ""; editorP.plano.value = p.plano || ""; editorP.link.value = p.link || ""; editorP.ordem.value = p.ordem ?? 10; editorP.ativo.checked = !!p.ativo; }
   editorP.scrollIntoView({ behavior: "smooth", block: "start" }); editorP.nome.focus();
 }
 $("#novoParceiro").addEventListener("click", () => abrirEditorParceiro(null));
@@ -236,11 +327,13 @@ editorP.addEventListener("submit", async e => {
   e.preventDefault(); const b = editorP.querySelector('[type="submit"]'); b.disabled = true;
   try {
     const id = editorP.id.value;
-    const dados = { nome: editorP.nome.value.trim(), plano: editorP.plano.value || null, link: editorP.link.value.trim() || null, ordem: Number(editorP.ordem.value) || 0, ativo: editorP.ativo.checked };
-    const nova = await enviarImagemNoticia(editorP.imagem.files[0], "parceiros", 800, true);
+    const dados = { nome: editorP.nome.value.trim(), plano: editorP.plano.value || null, link: editorP.link.value.trim() || null, ordem: Number(editorP.ordem.value) || 0, ativo: editorP.ativo.checked, tipo: editorP.tipo.value, ate: editorP.ate.value || null };
+    const banner = dados.tipo === "banner";
+    const nova = await enviarImagemNoticia(editorP.imagem.files[0], "parceiros", banner ? 1600 : 800, true);
+    if (banner && !nova && !editorP.imagem_atual.value) throw new Error("O banner precisa de uma imagem.");
     dados.imagem = nova || editorP.imagem_atual.value || null;
     const r = await fetch(`${BD.url}/rest/v1/parceiros${id ? "?id=eq." + id : ""}`, { method: id ? "PATCH" : "POST", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify(dados) });
-    if (!r.ok) throw new Error("Não foi possível guardar.");
+    if (!r.ok) throw new Error(r.status === 400 ? "Falta atualizar a base de dados (script de 6 nov) para usar banners e datas." : "Não foi possível guardar.");
     avisar("Parceiro guardado."); editorP.hidden = true; carregarParceiros();
   } catch (err) { avisar(err.message || "Algo correu mal."); }
   b.disabled = false;

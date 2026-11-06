@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=27">
+  <link rel="stylesheet" href="css/estilo.css?v=29">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://marcos-zorzetto.github.io/aveirocult-teste/icones/icone-512.png"}}</script>
 </head>
 <body>
@@ -233,6 +233,9 @@
 </section>
 
 <!-- Notícias -->
+<!-- Banner de anunciante (gerido no painel, em Parceiros → tipo "Banner") -->
+<div class="caixa banner-pub" id="bannerPub" hidden></div>
+
 <section class="bloco" id="noticias">
   <div class="caixa">
     <div class="titulo-sec" data-reveal>
@@ -249,6 +252,29 @@
 </section>
 
 <!-- App -->
+<!-- Projetos com a assinatura do Aveiro Cult -->
+<section class="bloco projetos-sec" id="projetos">
+  <div class="caixa">
+    <div class="titulo-sec" data-reveal>
+      <div>
+        <p class="sobre-titulo">Feito por nós</p>
+        <h2>Os projetos <em>do Aveiro Cult</em></h2>
+      </div>
+      <p class="nota">Além de divulgar, criamos cultura. Estes são os eventos e iniciativas com a nossa assinatura.</p>
+    </div>
+    <div class="projetos">
+      <article class="projeto" data-reveal style="--i:0"><span class="marca">Todos os meses</span><b>Open Mics</b><p>Palco aberto a músicos, poetas e outros artistas do distrito, em bares e espaços locais.</p></article>
+      <article class="projeto destaque-fema" data-reveal style="--i:1"><span class="marca">Festival</span><b>FeMA · Festival de Músicos de Aveiro</b><p>O festival de quem faz a música de Aveiro: artistas nascidos ou residentes no distrito.</p></article>
+      <article class="projeto" data-reveal style="--i:2"><span class="marca">Celebrações</span><b>Festas temáticas</b><p>Noites que juntam comunidade, música e tradição.</p></article>
+      <article class="projeto" data-reveal style="--i:3"><span class="marca">Na rua</span><b>Eventos culturais de rua</b><p>Cultura acessível e participativa em espaços públicos e privados.</p></article>
+    </div>
+    <div class="projetos-acoes" data-reveal>
+      <button class="btn btn-primario" type="button" id="verEventosAC" data-tag="aveirocult" hidden>Ver os próximos eventos do Aveiro Cult <svg><use href="#i-seta"/></svg></button>
+      <a class="btn btn-escuro" href="sobre.html#projetos">Conhecer todos os projetos</a>
+    </div>
+  </div>
+</section>
+
 <section class="app-sec" id="app">
   <div class="blob b1"></div><div class="blob b2"></div>
   <div class="caixa app-in">
@@ -447,12 +473,12 @@
         <span>Conversas com quem faz a cultura acontecer no distrito.</span>
         <em>Ouvir <svg><use href="#i-seta"/></svg></em>
       </a>
-      <div class="cartao-com" data-reveal style="--i:1">
+      <a class="cartao-com" href="https://chat.whatsapp.com/GigjCf5mGC33Nc00ohIBwx" target="_blank" rel="noopener" data-reveal style="--i:1">
         <span class="icone verde"><svg><use href="#i-chat"/></svg></span>
         <b>Comunidade WhatsApp</b>
         <span>Os eventos da semana no telemóvel, com quem gosta de arte e cultura no distrito de Aveiro.</span>
-        <span class="ligacoes"><a href="https://chat.whatsapp.com/GigjCf5mGC33Nc00ohIBwx" target="_blank" rel="noopener"><em>Entrar na comunidade <svg><use href="#i-seta"/></svg></em></a><a class="secundaria" href="https://whatsapp.com/channel/0029VasLxHnKAwEdzSloVc3b" target="_blank" rel="noopener">Canal de avisos</a></span>
-      </div>
+        <em>Entrar na comunidade <svg><use href="#i-seta"/></svg></em>
+      </a>
       <a class="cartao-com" href="https://www.instagram.com/aveirocult" target="_blank" rel="noopener" data-reveal style="--i:2">
         <span class="icone rosa"><svg><use href="#i-insta"/></svg></span>
         <b>Redes sociais</b>
@@ -491,7 +517,7 @@
     </div>
     <div>
       <b>Aveiro Cult</b>
-      <a href="#comunidade">Comunidade</a><a href="#app">Instalar a app</a><a href="sobre.html">Sobre o Aveiro Cult</a><a href="empresas.html">Empresas Amigas da Cultura</a><a href="privacidade.html">Privacidade e termos</a><a href="mailto:aveirocult@gmail.com">aveirocult@gmail.com</a><a href="https://www.instagram.com/aveirocult" target="_blank" rel="noopener">Instagram</a><a href="https://www.facebook.com/Aveirocult" target="_blank" rel="noopener">Facebook</a><a href="https://www.facebook.com/groups/aveirocult" target="_blank" rel="noopener">Grupo Facebook</a><a href="https://www.youtube.com/@Aveirocult" target="_blank" rel="noopener">YouTube</a><a href="https://whatsapp.com/channel/0029VasLxHnKAwEdzSloVc3b" target="_blank" rel="noopener">Canal WhatsApp</a>
+      <a href="#comunidade">Comunidade</a><a href="#app">Instalar a app</a><a href="sobre.html">Sobre o Aveiro Cult</a><a href="empresas.html">Empresas Amigas da Cultura</a><a href="privacidade.html">Privacidade e termos</a><a href="mailto:aveirocult@gmail.com">aveirocult@gmail.com</a><a href="https://www.instagram.com/aveirocult" target="_blank" rel="noopener">Instagram</a><a href="https://www.facebook.com/Aveirocult" target="_blank" rel="noopener">Facebook</a><a href="https://www.facebook.com/groups/aveirocult" target="_blank" rel="noopener">Grupo Facebook</a><a href="https://www.youtube.com/@Aveirocult" target="_blank" rel="noopener">YouTube</a><a href="https://chat.whatsapp.com/GigjCf5mGC33Nc00ohIBwx" target="_blank" rel="noopener">Comunidade WhatsApp</a>
     </div>
   </div>
   <div class="caixa direitos">
@@ -528,7 +554,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/dados.js?v=20"></script>
-<script src="js/app.js?v=23"></script>
+<script src="js/app.js?v=25"></script>
 <script src="js/imagens.js?v=2"></script>
 <script src="js/analytics.js?v=1"></script>
 </body>
