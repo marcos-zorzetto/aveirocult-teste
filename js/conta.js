@@ -62,7 +62,7 @@
       const { ok: certo, j } = await Sessao.pedir("token?grant_type=password", { email: f.email.value.trim(), password: f.senha.value });
       if (!certo) throw new Error(traduzir(j, "Não foi possível entrar agora. Tenta de novo."));
       Sessao.guardar(j); f.reset(); await seguir();
-    } catch (err) { erroEm("#erroEntrar", err.message === "Failed to fetch" ? "Sem ligação à internet." : err.message); }
+    } catch (err) { erroEm("#erroEntrar", err?.name === "Error" ? err.message : "Sem ligação à internet. Tenta outra vez."); }
     b.disabled = false;
   });
 
@@ -81,7 +81,7 @@
       f.reset(); f.classList.remove("validar");
       if (j.access_token) { Sessao.guardar(j); avisar("Conta criada. Bem-vindo(a)!"); await seguir(); }
       else ok("Confirma o teu email", `Enviámos um link para ${email}. Abre-o para ativar a conta (vê também na pasta de spam). Depois já podes publicar.`);
-    } catch (err) { erroEm("#erroCriar", err.message === "Failed to fetch" ? "Sem ligação à internet." : err.message); }
+    } catch (err) { erroEm("#erroCriar", err?.name === "Error" ? err.message : "Sem ligação à internet. Tenta outra vez."); }
     b.disabled = false;
   });
 
@@ -94,7 +94,7 @@
       const { ok: certo, j } = await Sessao.pedir(`recover?redirect_to=${encodeURIComponent(aqui())}`, { email: f.email.value.trim() });
       if (!certo) throw new Error(traduzir(j, "Não foi possível enviar o email agora."));
       ok("Vê o teu email", `Se existir uma conta com ${f.email.value.trim()}, vais receber um link para escolher uma palavra-passe nova.`);
-    } catch (err) { erroEm("#erroRecuperar", err.message); }
+    } catch (err) { erroEm("#erroRecuperar", err?.name === "Error" ? err.message : "Sem ligação à internet. Tenta outra vez."); }
     b.disabled = false;
   });
 
@@ -130,7 +130,7 @@
       if (!certo) throw new Error(traduzir(j, "Não foi possível guardar a palavra-passe."));
       if (tokenTemp) { Sessao.guardar({ ...tokenTemp, user: j.id ? j : tokenTemp.user }); tokenTemp = null; }
       f.reset(); avisar("Palavra-passe guardada."); $("#cancelarSenha").hidden = true; await abrirConta();
-    } catch (err) { erroEm("#erroSenha", err.message); }
+    } catch (err) { erroEm("#erroSenha", err?.name === "Error" ? err.message : "Sem ligação à internet. Tenta outra vez."); }
     b.disabled = false;
   });
   $("#mudarSenha").addEventListener("click", () => { verEntrada("formSenha"); $("#textoSenha").textContent = "Escolhe a tua palavra-passe nova."; $("#cancelarSenha").hidden = false; });
@@ -230,7 +230,7 @@
       const linhas = r.ok ? await r.json() : [];
       if (!linhas.length) throw new Error("Não foi possível guardar agora. Tenta de novo.");
       ficha = linhas[0]; desenharFicha(s); avisar("Dados guardados.");
-    } catch (err) { if (err.sessao) return verEntrada(); erroEm("#erroDados", err.message); }
+    } catch (err) { if (err.sessao) return verEntrada(); erroEm("#erroDados", err?.name === "Error" ? err.message : "Sem ligação à internet. Tenta outra vez."); }
     b.disabled = false;
   });
 

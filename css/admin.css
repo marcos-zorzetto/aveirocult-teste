@@ -7,8 +7,8 @@ a { color: inherit; }
 [hidden] { display: none !important; }
 
 .topo { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: #fff; border-bottom: 1px solid var(--linha); }
-.marca { font-family: var(--titulo); font-weight: 800; font-size: 22px; letter-spacing: -.03em; text-decoration: none; }
-.marca .a::first-letter { color: var(--primaria); } .marca .c::first-letter { color: var(--amarelo); }
+.marca { display: block; flex: none; line-height: 0; color: var(--tinta); }
+.marca-logo { display: block; height: 40px; width: auto; aspect-ratio: 1472 / 808; }
 .topo-tit { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .14em; color: var(--cinza); }
 .btn-sair { margin-left: auto; background: none; border: 1px solid var(--linha); border-radius: 999px; padding: 8px 16px; font: 600 13px var(--fonte); cursor: pointer; }
 

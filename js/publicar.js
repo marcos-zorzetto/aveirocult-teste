@@ -55,6 +55,9 @@ document.getElementById("ano").textContent = new Date().getFullYear();
       let av = form.querySelector(".aviso-conta");
       if (!av) { form.insertAdjacentHTML("afterbegin", `<p class="aviso-conta"></p>`); av = form.querySelector(".aviso-conta"); }
       av.innerHTML = `A publicar como <b>${esc(conta.email)}</b> · <a href="conta.html">A minha conta</a> · <button type="button" data-trocar>Trocar de conta</button>`;
+      // conta que também é da equipa: avisa que publica sem revisão (evita pensar que a aprovação falhou)
+      fetch(`${ENVIO.url}/rest/v1/rpc/e_moderador`, { method: "POST", headers: { ...cabecalhos, Authorization: `Bearer ${conta.access_token}`, "Content-Type": "application/json" }, body: "{}" })
+        .then(r => r.ok ? r.json() : false).then(eq => { if (eq === true && !form.querySelector(".aviso-mod")) av.insertAdjacentHTML("afterend", `<p class="aviso-mod">Esta conta faz parte da equipa do Aveiro Cult: o que publicares aparece logo no site, sem revisão. Para testar como cliente, usa outra conta.</p>`); }).catch(() => { });
     } else if (sessaoMod) form.querySelector('[name="email"]').value = sessaoMod.email || "";
   }
   form.addEventListener("click", e => { if (e.target.closest("[data-trocar]")) { Sessao.limpar(); location.href = "conta.html?voltar=divulgar"; } });
@@ -73,17 +76,43 @@ document.getElementById("ano").textContent = new Date().getFullYear();
   [...seg.querySelectorAll("button")].forEach(b => b.addEventListener("click", () => mudarTipo(b.dataset.tipo)));
   mudarTipo("evento");
 
-  // Reduz a imagem no próprio telemóvel (máx. 1600 px, JPEG) e envia para o Storage
+  // Reduz a imagem no próprio telemóvel (máx. 1600 px, JPEG) e envia para o Storage.
+  // Se o navegador não conseguir abrir a imagem para a reduzir, envia o ficheiro original (JPG/PNG/WebP até 5 MB).
+  // erros escritos por nós (em português); qualquer outro erro do navegador mostra uma mensagem genérica
+  const falha = m => Object.assign(new Error(m), { nossa: true });
+  const TIPOS = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const abrirImagem = f => new Promise((ok, falha) => {
+    const url = URL.createObjectURL(f), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(url); ok(im); };
+    im.onerror = () => { URL.revokeObjectURL(url); falha(new Error("descodificar")); };
+    im.src = url;
+  });
+  async function reduzir(f) {
+    let img;
+    try { img = await createImageBitmap(f); } catch { img = await abrirImagem(f).catch(() => null); }
+    const w = img?.width || img?.naturalWidth, h = img?.height || img?.naturalHeight;
+    if (!w || !h) throw falha("Não conseguimos abrir esta imagem. Confirma que é uma foto JPG ou PNG (no iPhone, as fotos HEIC podem ser enviadas como captura de ecrã).");
+    const k = Math.min(1, 1600 / Math.max(w, h)), c = document.createElement("canvas");
+    c.width = Math.round(w * k); c.height = Math.round(h * k);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); // PNG transparente fica com fundo branco, não preto
+    g.drawImage(img, 0, 0, c.width, c.height);
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .82));
+    if (!blob) throw new Error("descodificar");
+    return blob;
+  }
   async function enviarImagem(f, cab = cabecalhos) {
     if (!f || !f.size) return null;
-    if (f.size > 5 * 1024 * 1024) throw new Error("A imagem tem mais de 5 MB. Escolhe uma mais leve.");
-    const img = await createImageBitmap(f); const esc_ = Math.min(1, 1600 / Math.max(img.width, img.height));
-    const c = document.createElement("canvas"); c.width = Math.round(img.width * esc_); c.height = Math.round(img.height * esc_);
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .82));
-    const nome = `envios/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-    const r = await fetch(`${ENVIO.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { ...cab, "Content-Type": "image/jpeg", "x-upsert": "false" }, body: blob });
-    if (!r.ok) throw new Error("Não foi possível enviar a imagem. Tenta sem imagem ou com outra.");
+    if (f.size > 5 * 1024 * 1024) throw falha("A imagem tem mais de 5 MB. Escolhe uma mais leve.");
+    let corpo, tipoImg = "image/jpeg";
+    try { corpo = await reduzir(f); }
+    catch (e) {
+      // imagem ilegível: avisa; imagem lida mas sem memória para reduzir: envia o original (JPG/PNG/WebP)
+      if (e.nossa || !TIPOS[f.type]) throw e.nossa ? e : falha("Não conseguimos abrir esta imagem. Usa uma imagem JPG ou PNG.");
+      corpo = f; tipoImg = f.type;
+    }
+    const nome = `envios/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${TIPOS[tipoImg]}`;
+    const r = await fetch(`${ENVIO.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { ...cab, "Content-Type": tipoImg, "x-upsert": "false" }, body: corpo }).catch(() => null);
+    if (!r || !r.ok) throw falha("Não foi possível enviar a imagem. Verifica a internet e tenta outra vez, ou envia sem imagem.");
     return `${ENVIO.url}/storage/v1/object/public/imagens/${nome}`;
   }
 
@@ -119,21 +148,23 @@ document.getElementById("ano").textContent = new Date().getFullYear();
             tags: (v("tags") || "").split(",").map(t => t.trim().toLowerCase().replace(/^#/, "").slice(0, 24)).filter(Boolean).slice(0, 8) }
         : { tipo, titulo: v("nome_artistico"), categoria: v("area"), concelho: v("concelho_artista"), descricao: v("bio"), site: v("site"), rede: v("rede") };
       const sessao = sessaoMod || await Sessao.obter();
-      if (!sessao) { await verConta(); throw new Error("A tua sessão terminou. Entra outra vez para enviar."); }
+      if (!sessao) { await verConta(); throw falha("A tua sessão terminou. Entra outra vez para enviar."); }
       dados.responsavel = v("responsavel"); dados.email = sessao.email || v("email");
       const autorizado = { ...cabecalhos, Authorization: `Bearer ${sessao.access_token}` };
       dados.imagem = await enviarImagem(fd.get("imagem"), autorizado);
       const r = await fetch(`${ENVIO.url}/rest/v1/${ENVIO.tabela}?select=id,estado`, { method: "POST", headers: { ...autorizado, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(dados) });
-      if (r.status === 401) { Sessao.limpar(); await verConta(); throw new Error("A tua sessão terminou. Entra outra vez para enviar."); }
-      if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error(/limite/.test(t) ? "Já recebemos várias publicações tuas na última hora. Tenta mais tarde." : "Não foi possível enviar agora. Tenta outra vez daqui a pouco."); }
+      if (r.status === 401) { Sessao.limpar(); await verConta(); throw falha("A tua sessão terminou. Entra outra vez para enviar."); }
+      if (!r.ok) { const t = await r.text().catch(() => ""); throw falha(/limite/.test(t) ? "Já recebemos várias publicações tuas na última hora. Tenta mais tarde." : "Não foi possível enviar agora. Tenta outra vez daqui a pouco."); }
       // Avisa a equipa por email que há uma publicação para rever (não bloqueia o cliente se falhar)
       const [criada] = await r.json().catch(() => []);
       if (criada?.estado === "pendente") fetch(`${ENVIO.url}/functions/v1/alertar-equipa`, { method: "POST", headers: { ...autorizado, "Content-Type": "application/json" }, body: JSON.stringify({ id: criada.id }), keepalive: true }).catch(() => { });
-      $("#formOkTexto").textContent = sessaoMod ? "Publicado. Como tens sessão de moderação aberta, já está no site e na app." : `A equipa vai rever ${tipo === "evento" ? "o teu evento" : "o teu portfólio"} e vais receber um email em ${sessao.email} quando estiver publicado. Podes acompanhar em "A minha conta".`;
+      const publicadaJa = sessaoMod || criada?.estado === "aprovado";
+      $("#formOkTexto").textContent = publicadaJa ? "Como esta conta é da equipa do Aveiro Cult, já está no site e na app, sem passar pela revisão." : `A equipa vai rever ${tipo === "evento" ? "o teu evento" : "o teu portfólio"} e vais receber um email em ${sessao.email} quando estiver publicado. Podes acompanhar em "A minha conta".`;
       ok.querySelector('a[href="conta.html"]').hidden = !!sessaoMod;
+      ok.querySelector("h2").textContent = publicadaJa ? "Publicado!" : "Recebido, obrigado!";
       form.hidden = true; ok.hidden = false; ok.scrollIntoView({ behavior: "smooth", block: "center" });
       avisar("Enviado com sucesso");
-    } catch (err) { erro.textContent = err.message || "Algo correu mal. Tenta outra vez."; erro.hidden = false; }
+    } catch (err) { erro.textContent = err?.nossa ? err.message : "Algo correu mal. Tenta outra vez daqui a pouco."; erro.hidden = false; }
     btn.disabled = false; btn.style.opacity = "";
   });
   $("#formOutro").addEventListener("click", async () => { form.reset(); form.classList.remove("validar"); ok.hidden = true; mudarTipo("evento"); await verConta(); (form.hidden ? porta : form).scrollIntoView({ behavior: "smooth", block: "start" }); });

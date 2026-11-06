@@ -66,7 +66,7 @@ $("#formSenha").addEventListener("submit", async e => {
     const u = await guardarSenha(token, f.senha.value);
     if (tokenTemp) { sessao = { access_token: tokenTemp.access_token, email: u.email, expira: tokenTemp.expira }; sessionStorage.setItem("ac-mod", JSON.stringify(sessao)); tokenTemp = null; }
     f.reset(); cartao("entrar"); mostrar(); avisar("Palavra-passe guardada.");
-  } catch (err) { erro.textContent = err.message; erro.hidden = false; }
+  } catch (err) { erro.textContent = msgErro(err); erro.hidden = false; }
   b.disabled = false;
 });
 $("#abrirRecuperar").addEventListener("click", () => { cartao("recuperar"); $("#formRecuperar").email.value = $("#formEntrar").email.value; });
@@ -79,7 +79,7 @@ $("#formRecuperar").addEventListener("submit", async e => {
     if (r.status === 429) throw new Error("Já pediste um link há pouco. Espera uns minutos e tenta de novo.");
     if (!r.ok) throw new Error("Não foi possível enviar o email agora.");
     ok.hidden = false;
-  } catch (err) { erro.textContent = err.message; erro.hidden = false; }
+  } catch (err) { erro.textContent = msgErro(err); erro.hidden = false; }
   b.disabled = false;
 });
 // Mudar a palavra-passe com a sessão aberta
@@ -177,7 +177,7 @@ async function mudar(id, acao) {
 
 $("#formEntrar").addEventListener("submit", async e => {
   e.preventDefault(); const f = e.target, b = f.querySelector("button"), erro = $("#erroEntrar"); b.disabled = true; erro.hidden = true;
-  try { await entrar(f.email.value.trim(), f.senha.value); f.reset(); mostrar(); } catch (err) { erro.textContent = err.message; erro.hidden = false; }
+  try { await entrar(f.email.value.trim(), f.senha.value); f.reset(); mostrar(); } catch (err) { erro.textContent = msgErro(err); erro.hidden = false; }
   b.disabled = false;
 });
 $("#sair").addEventListener("click", sair);
@@ -260,17 +260,34 @@ function abrirEditor(n) {
   else { editor.data.value = new Date().toISOString().slice(0, 10); editor.publicado.checked = true; }
   editor.scrollIntoView({ behavior: "smooth", block: "start" }); editor.titulo.focus();
 }
+// Abre a imagem para a reduzir; se o navegador não conseguir (alguns PNG no Android), tenta pela <img>
+// Erros nossos (Error) mostram o texto; erros do navegador (TypeError, DOMException, em inglês) mostram uma frase em português
+const msgErro = err => err && err.name === "Error" && err.message ? err.message : "Algo correu mal. Verifica a internet e tenta outra vez.";
+async function abrirImagem(f) {
+  try { return await createImageBitmap(f); } catch { /* tenta de outra forma */ }
+  return await new Promise((ok, falha) => { const url = URL.createObjectURL(f), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(url); ok(im); }; im.onerror = () => { URL.revokeObjectURL(url); falha(new Error("Não conseguimos abrir esta imagem. Usa um JPG ou PNG.")); }; im.src = url; });
+}
 async function enviarImagemNoticia(f, pasta = "noticias", maxLado = 1600, manterPng = false) {
   if (!f || !f.size) return null;
   if (f.size > 5 * 1024 * 1024) throw new Error("A imagem tem mais de 5 MB.");
-  const img = await createImageBitmap(f); const k = Math.min(1, maxLado / Math.max(img.width, img.height));
-  const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
   const png = manterPng && f.type === "image/png"; // logótipos PNG mantêm a transparência
-  const blob = await new Promise(r => c.toBlob(r, png ? "image/png" : "image/jpeg", .84));
-  const nome = `envios/${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${png ? "png" : "jpg"}`;
-  const r = await fetch(`${BD.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { apikey: BD.chave, Authorization: `Bearer ${sessao.access_token}`, "Content-Type": png ? "image/png" : "image/jpeg" }, body: blob });
-  if (!r.ok) throw new Error("Não foi possível enviar a imagem.");
+  let blob, tipo = png ? "image/png" : "image/jpeg";
+  try {
+    const img = await abrirImagem(f), w = img.width || img.naturalWidth, h = img.height || img.naturalHeight, k = Math.min(1, maxLado / Math.max(w, h));
+    const c = document.createElement("canvas"); c.width = Math.round(w * k); c.height = Math.round(h * k);
+    const g = c.getContext("2d"); if (!png) { g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); } // PNG transparente em JPEG: fundo branco
+    g.drawImage(img, 0, 0, c.width, c.height);
+    blob = await new Promise(r => c.toBlob(r, tipo, .84));
+  } catch { /* fica sem reduzir */ }
+  if (!blob) { // envia o original se for um formato aceite
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) throw new Error("Não conseguimos abrir esta imagem. Usa um JPG ou PNG.");
+    blob = f; tipo = f.type;
+  }
+  const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[tipo];
+  const nome = `envios/${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const r = await fetch(`${BD.url}/storage/v1/object/imagens/${nome}`, { method: "POST", headers: { apikey: BD.chave, Authorization: `Bearer ${sessao.access_token}`, "Content-Type": tipo }, body: blob }).catch(() => null);
+  if (!r || !r.ok) throw new Error("Não foi possível enviar a imagem. Verifica a internet e tenta outra vez.");
   return `${BD.url}/storage/v1/object/public/imagens/${nome}`;
 }
 // Cria na agenda um evento a partir da notícia (fica aprovado logo: a equipa é moderadora)
@@ -306,7 +323,7 @@ editor.addEventListener("submit", async e => {
     let extra = "";
     if (editor.e_evento.checked) { await criarEventoDaNoticia({ ...dados, slug: guardada.slug || dados.slug }); extra = " O evento já está na agenda."; }
     avisar((dados.publicado ? "Notícia publicada." : "Rascunho guardado.") + extra); editor.hidden = true; carregarNoticias();
-  } catch (err) { avisar(err.message || "Algo correu mal."); }
+  } catch (err) { avisar(msgErro(err)); }
   b.disabled = false;
 });
 $("#listaNoticias").addEventListener("click", async e => {
@@ -374,7 +391,7 @@ editorP.addEventListener("submit", async e => {
     const r = await fetch(`${BD.url}/rest/v1/parceiros${id ? "?id=eq." + id : ""}`, { method: id ? "PATCH" : "POST", headers: { ...cab(), Prefer: "return=minimal" }, body: JSON.stringify(dados) });
     if (!r.ok) throw new Error(r.status === 400 ? "Falta atualizar a base de dados (script de 6 nov) para usar banners e datas." : "Não foi possível guardar.");
     avisar("Parceiro guardado."); editorP.hidden = true; carregarParceiros();
-  } catch (err) { avisar(err.message || "Algo correu mal."); }
+  } catch (err) { avisar(msgErro(err)); }
   b.disabled = false;
 });
 $("#listaParceiros").addEventListener("click", async e => {
