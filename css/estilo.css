@@ -626,3 +626,7 @@ mark { background: rgba(242,183,5,.4); color: inherit; border-radius: 3px; paddi
 .opcoes input:focus-visible + span { outline: 3px solid rgba(0,47,163,.35); outline-offset: 2px; }
 .dias-semana small { font-size: 13px; color: var(--cinza); }
 [data-quando][hidden] { display: none; }
+
+/* Estados de erro/vazio com ação (ligação dentro do texto) */
+.vazio a, .vazio .ligacao { background: none; border: 0; padding: 0; font: inherit; color: var(--primaria); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.vazio a:hover, .vazio .ligacao:hover { color: var(--primaria-escura); }

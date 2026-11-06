@@ -382,26 +382,39 @@ const cabecalhos = { apikey: ENVIO.chave, Authorization: `Bearer ${ENVIO.chave}`
 /* ---------- Agenda e artistas vindos da base de dados (eventos aprovados) ---------- */
 (async () => {
   const hoje = new Date().toISOString().slice(0, 10);
-  const ler = async (vista, q) => { try { const r = await fetch(`${ENVIO.url}/rest/v1/${vista}?${q}`, { headers: cabecalhos }); return r.ok ? await r.json() : []; } catch { return []; } };
-  EVENTOS = await ler("eventos_publicos", `select=*&proxima_data=gte.${hoje}&order=proxima_data.asc,hora.asc&limit=300`);
+  let falhou = false; // distingue "sem dados" de "a base de dados não respondeu"
+  const ler = async (vista, q) => { try { const r = await fetch(`${ENVIO.url}/rest/v1/${vista}?${q}`, { headers: cabecalhos }); if (!r.ok) { falhou = true; return []; } return await r.json(); } catch { falhou = true; return []; } };
+  // os quatro pedidos partem ao mesmo tempo (antes eram um a seguir ao outro)
+  const [eventos, noticias, parceiros, artistas] = await Promise.all([
+    ler("eventos_publicos", `select=*&proxima_data=gte.${hoje}&order=proxima_data.asc,hora.asc&limit=300`),
+    ler("noticias", "select=id,slug,titulo,resumo,imagem,categoria,concelho,data&publicado=is.true&order=data.desc,id.desc&limit=60"),
+    ler("parceiros", "select=nome,link,imagem&ativo=is.true&order=ordem.asc,nome.asc&limit=24"),
+    ler("artistas_publicos", "select=*&order=criado_em.desc&limit=12")
+  ]);
+  EVENTOS = eventos;
+  if (!EVENTOS.length) {
+    const vz = $("#agendaVazio");
+    vz.innerHTML = falhou ? `Não foi possível carregar a agenda agora. Verifica a ligação à internet e <button type="button" class="ligacao" onclick="location.reload()">tenta de novo</button>.`
+      : `Ainda não há eventos aprovados para os próximos dias. <a href="#divulgar">Divulga o teu evento</a>, é grátis.`;
+    vz.hidden = false; $("#agendaResultado").textContent = "";
+    const it = ["Agenda cultural do distrito de Aveiro", "Divulga o teu evento ou o teu trabalho artístico · é grátis", "Concertos, teatro, exposições, mercados e muito mais"];
+    $("#ticker").innerHTML = [...it, ...it].map(t => `<span>${esc(t)}</span>`).join("");
+  }
   if (EVENTOS.length) {
     mostrarTags(); mostrarAgenda();
     const it = EVENTOS.slice(0, 12).map(e => { const d = new Date((e.proxima_data || e.data) + "T12:00:00"); return `${String(d.getDate()).padStart(2, "0")} ${MESES[d.getMonth()]} · ${e.titulo}${e.concelho ? " · " + e.concelho : ""}`; });
     $("#ticker").innerHTML = [...it, ...it].map(t => `<span>${esc(t)}</span>`).join("");
   }
-  const noticias = await ler("noticias", "select=id,slug,titulo,resumo,imagem,categoria,concelho,data&publicado=is.true&order=data.desc,id.desc&limit=60");
   if (noticias.length) {
     NOTICIAS.length = 0;
     noticias.forEach(n => NOTICIAS.push({ t: n.titulo, d: n.data, cat: n.categoria || "", onde: n.concelho || "", f: n.imagem || "", ex: n.resumo || "", l: `noticia.html?n=${encodeURIComponent(n.slug || n.id)}`, interno: true }));
     desenharDestaques(); mostrar(); setTimeout(atualizarPontos, 100);
   }
-  const parceiros = await ler("parceiros", "select=nome,link,imagem&ativo=is.true&order=ordem.asc,nome.asc&limit=24");
   const lp = $("#parceirosLista");
   if (lp) {
     lp.innerHTML = parceiros.length ? parceiros.map(p => `<a class="parceiro" href="${esc(p.link || "#")}" target="_blank" rel="noopener" title="${esc(p.nome)}">${p.imagem ? `<img src="${esc(p.imagem)}" alt="${esc(p.nome)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))">` : `<span>${esc(p.nome)}</span>`}</a>`).join("")
       : `<p class="parceiros-vazio">Sê a primeira empresa a apoiar a cultura do distrito.</p>`;
   }
-  const artistas = await ler("artistas_publicos", "select=*&order=criado_em.desc&limit=12");
   const sec = $("#artistas");
   if (sec && artistas.length) {
     $("#artistasLista").innerHTML = artistas.map((a, i) => `<article class="artista" data-reveal style="--i:${i}">

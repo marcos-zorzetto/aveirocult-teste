@@ -20,9 +20,15 @@ async function ler() {
   if (!id && !slug) return null;
   try {
     const r = await fetch(`${BD.url}/rest/v1/${fonte}?select=*&${filtro}&limit=1`, { headers: { apikey: BD.chave, Authorization: `Bearer ${BD.chave}` } });
-    const j = r.ok ? await r.json() : [];
+    if (!r.ok) return { erro: true };
+    const j = await r.json();
     return j[0] || null;
-  } catch { return null; }
+  } catch { return { erro: true }; }
+}
+
+function semLigacao() {
+  $("#conteudo").innerHTML = `<div class="pg-vazio"><p class="sobre-titulo">Sem ligação</p><h1>Não foi possível carregar esta página</h1><p>A base de dados não respondeu. Verifica a ligação à internet e tenta de novo.</p><button class="btn btn-primario" type="button" onclick="location.reload()">Tentar de novo</button></div>`;
+  document.title = "Sem ligação · Aveiro Cult";
 }
 
 function naoEncontrado() {
@@ -133,6 +139,7 @@ function mostrarNoticia(n) {
   document.getElementById("ano").textContent = new Date().getFullYear();
   const r = await ler();
   if (!r) return naoEncontrado();
+  if (r.erro) return semLigacao();
   ({ evento: mostrarEvento, artista: mostrarArtista, noticia: mostrarNoticia })[tipo](r);
   document.body.classList.add("carregado");
 })();
