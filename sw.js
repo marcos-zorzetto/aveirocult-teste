@@ -1,6 +1,6 @@
 // Guarda a "casca" do site para abrir rápido e funcionar com pouca rede
-const VERSAO = "ac-v32";
-const CASCA = ["./", "index.html", "css/estilo.css?v=30", "js/dados.js?v=20", "js/sessao.js?v=1", "js/app.js?v=28", "js/analytics.js?v=1", "js/imagens.js?v=2", "manifest.webmanifest", "icones/icone-192.png", "icones/icone-512.png", "img/hero-02.jpg"];
+const VERSAO = "ac-v34";
+const CASCA = ["./", "index.html", "css/estilo.css?v=32", "js/dados.js?v=20", "js/sessao.js?v=1", "js/app.js?v=30", "js/analytics.js?v=1", "js/imagens.js?v=2", "manifest.webmanifest", "icones/icone-192.png", "icones/icone-512.png", "img/hero-02.jpg"];
 
 self.addEventListener("install", e => {
   self.skipWaiting();
@@ -18,12 +18,14 @@ self.addEventListener("fetch", e => {
   const url = new URL(request.url);
   // Páginas: pedir sempre ao servidor, ignorando a cópia HTTP de 10 min do GitHub Pages (assim a versão nova chega ao primeiro recarregar)
   if (request.mode === "navigate") {
-    e.respondWith(fetch(request.url, { cache: "no-cache", credentials: "same-origin" }).then(r => guardar(request, r))
-      .catch(() => caches.match(request).then(r => r || caches.match("./"))));
+    // guarda só uma cópia por página (sem ?id=...), para a cache não crescer com cada evento visitado
+    const chave = url.origin + url.pathname;
+    e.respondWith(fetch(request.url, { cache: "no-cache", credentials: "same-origin" }).then(r => guardar(chave, r))
+      .catch(() => caches.match(chave).then(r => r || caches.match("./"))));
     return;
   }
   // Ficheiros com versão no nome (?v=) e imagens do site: nunca mudam sem mudar o nome, por isso a cópia local serve primeiro
-  if (url.searchParams.has("v") || /^\/[^?]*\/(img|icones)\//.test(url.pathname) || /\/(img|icones)\//.test(url.pathname)) {
+  if (url.searchParams.has("v") || /\/(img|icones)\//.test(url.pathname)) {
     e.respondWith(caches.match(request).then(r => r || fetch(request).then(x => guardar(request, x))));
     return;
   }

@@ -53,6 +53,7 @@ blockquote { margin-top: 26px; padding: 20px 22px; border-left: 3px solid var(--
 .emp-contacto { padding-top: 0; }
 .contacto-cartao { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center; padding: clamp(28px, 4vw, 48px); border-radius: 28px; background: var(--tinta); color: #fff; }
 .contacto-cartao h2 { margin: 6px 0 10px; }
+.contacto-cartao .sobre-titulo, .contacto-cartao h2 em { color: var(--amarelo); } /* o azul não se lê sobre o fundo escuro */
 .contacto-cartao > div > p:last-child { color: rgba(255,255,255,.75); }
 .contacto-acoes { display: grid; gap: 10px; }
 .contacto-acoes .btn svg { width: 18px; height: 18px; }

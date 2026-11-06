@@ -28,7 +28,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=30">
+  <link rel="stylesheet" href="css/estilo.css?v=32">
+  <!-- A abertura animada só aparece na primeira visita de cada sessão (ou nunca, se chegar por um link para uma secção) -->
+  <script>try { if (sessionStorage.getItem("ac-abertura") || /^#[a-z][\w-]*$/i.test(location.hash)) document.documentElement.classList.add("sem-abertura"); } catch (e) {}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Aveiro Cult","url":"https://aveirocult.com/","description":"Agenda cultural, eventos e notícias do distrito de Aveiro","inLanguage":"pt-PT","publisher":{"@type":"Organization","name":"Aveiro Cult","logo":"https://marcos-zorzetto.github.io/aveirocult-teste/icones/icone-512.png"}}</script>
 </head>
 <body>
@@ -140,13 +142,13 @@
 
 <!-- HERO -->
 <section class="hero" id="inicio">
-  <div class="hero-fundo" id="heroFundo"></div>
+  <div class="hero-fundo" id="heroFundo"><img src="img/hero-02.jpg" alt="Mesa de restaurante com luz quente" fetchpriority="high" decoding="async" class="ativo"></div>
   <div class="hero-veu"></div>
   <div class="caixa hero-in">
     <div class="hero-conteudo" id="heroConteudo">
       <p class="script" data-entrada style="--i:0">Explore</p>
       <h1 data-entrada style="--i:1">
-        <span class="so-leitor">Agenda cultural do distrito de </span><span class="roda" id="rodaPalavra" aria-live="polite"><span>Aveiro</span></span>
+        <span class="so-leitor">Agenda cultural do distrito de Aveiro</span><span class="roda" id="rodaPalavra" aria-hidden="true"><span>Aveiro</span></span>
       </h1>
       <p class="hero-sub" data-entrada style="--i:2">Concertos, teatro, mercados, gastronomia e tudo o que acontece nos 19 concelhos do distrito. Num só lugar, no site e na app.</p>
 
@@ -496,7 +498,7 @@
 
 <script src="js/dados.js?v=20"></script>
 <script src="js/sessao.js?v=1"></script>
-<script src="js/app.js?v=28"></script>
+<script src="js/app.js?v=30"></script>
 <script src="js/imagens.js?v=2"></script>
 <script src="js/analytics.js?v=1"></script>
 </body>

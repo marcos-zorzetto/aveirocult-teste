@@ -37,3 +37,7 @@
 .pg-meta li { align-items: flex-start; }
 .pg-meta li svg { margin-top: 2px; }
 .pg-meta small { font-size: 14px; color: var(--cinza); }
+
+/* O conteúdo vem da base de dados depois de a página abrir: reservar altura evita que o rodapé salte (CLS) */
+.pagina-interna main { min-height: calc(100vh - 64px); min-height: calc(100svh - 64px); }
+@media (max-width: 900px) { .pagina-interna main { min-height: calc(100vh - 112px); min-height: calc(100svh - 112px); } }

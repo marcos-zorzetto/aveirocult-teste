@@ -6,6 +6,8 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const reduzir = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const toque = matchMedia("(pointer: coarse)").matches;
+// Só aceita links http(s): um link "javascript:" enviado por alguém nunca chega a ser clicável
+const urlSegura = u => { const x = String(u || "").trim(); return /^https?:\/\/[^\s]+$/i.test(x) ? x : ""; };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const normalizar = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 const icone = n => `<svg><use href="#i-${n}"/></svg>`;
@@ -64,19 +66,27 @@ addEventListener("keydown", e => { if (e.key === "Escape") { alternarMenu(false)
 const heroFundo = $("#heroFundo");
 const heroPontos = $("#heroPontos");
 HERO.forEach((h, i) => {
-  const img = new Image();
-  img.src = h.f; img.alt = h.alt; img.decoding = "async";
-  if (i === 0) { img.fetchPriority = "high"; img.classList.add("ativo"); } else img.loading = "lazy";
+  // a primeira imagem já vem no HTML (aparece mais depressa); as outras só são descarregadas
+  // quando estão quase a aparecer (poupa ~900 KB no arranque, sobretudo no telemóvel)
+  const img = i === 0 && heroFundo.querySelector("img") || new Image();
+  if (i === 0) { img.fetchPriority = "high"; img.classList.add("ativo"); }
+  else { img.dataset.src = h.f; img.alt = h.alt; img.decoding = "async"; }
   img.onerror = () => { img.remove(); heroPontos.children[i]?.remove(); };
   heroFundo.appendChild(img);
   const p = document.createElement("i"); if (i === 0) p.classList.add("ativo"); heroPontos.appendChild(p);
 });
 let slide = 0;
+const carregarHero = img => { if (img && img.dataset.src) { img.src = img.dataset.src; img.removeAttribute("data-src"); } };
+addEventListener("load", () => setTimeout(() => carregarHero($$("#heroFundo img")[1]), 1500), { once: true });
 function mudarSlide(n) {
   const imgs = $$("#heroFundo img"), pts = $$("#heroPontos i");
   if (imgs.length < 2) return;
+  const alvo = imgs[(n + imgs.length) % imgs.length];
+  carregarHero(alvo);
+  if (!alvo.complete || !alvo.naturalWidth) return; // ainda a descarregar: troca na vez seguinte
   imgs[slide]?.classList.remove("ativo"); pts[slide]?.classList.remove("ativo");
   slide = (n + imgs.length) % imgs.length;
+  carregarHero(imgs[(slide + 1) % imgs.length]); // prepara já a seguinte
   imgs[slide].classList.add("ativo");
   if (pts[slide]) { pts[slide].classList.add("ativo"); pts[slide].style.animation = "none"; pts[slide].offsetHeight; pts[slide].style.animation = ""; }
 }
@@ -85,19 +95,18 @@ if (!reduzir) setInterval(() => mudarSlide(slide + 1), 7000);
 /* ---------- Hero: palavra que roda ---------- */
 const roda = $("#rodaPalavra");
 const PALAVRAS = ["Aveiro", "Ílhavo", "Ovar", "Águeda", "Espinho", "Arouca", "Estarreja", "a Feira", "Vagos", "Anadia"];
-let pal = 0, atual = roda.querySelector("span");
-// Nota: com o separador em segundo plano o browser atrasa os temporizadores e vários ciclos podem disparar de seguida;
-// por isso guardamos a palavra atual, limpamos sobras e não trocamos enquanto a página não está visível.
+// Duas "fitas" fixas que trocam de papel (sai/entra): não se criam elementos novos a cada troca,
+// o que mantém a página leve e não confunde as medições de velocidade (LCP) do Google.
+const fitas = [roda.querySelector("span"), document.createElement("span")];
+let pal = 0, vez = 0;
 if (!reduzir) setInterval(() => {
-  if (document.hidden) return;
-  roda.querySelectorAll("span").forEach(s => { if (s !== atual) s.remove(); });
-  const antiga = atual;
+  if (document.hidden) return; // em segundo plano não troca (o browser acumularia trocas)
   pal = (pal + 1) % PALAVRAS.length;
-  const nova = document.createElement("span");
-  nova.textContent = PALAVRAS[pal]; nova.className = "entra";
-  antiga.className = "sai";
-  roda.appendChild(nova); atual = nova;
-  setTimeout(() => { if (antiga !== atual) antiga.remove(); }, 700);
+  const antiga = fitas[vez], nova = fitas[vez = 1 - vez];
+  nova.textContent = PALAVRAS[pal];
+  antiga.className = "sai"; nova.className = "entra"; nova.hidden = false;
+  if (!nova.isConnected) roda.appendChild(nova);
+  setTimeout(() => { if (antiga.className === "sai") antiga.hidden = true; }, 700); // a palavra que saiu deixa de ocupar largura
 }, 4200);
 
 /* ---------- Contadores ---------- */
@@ -404,7 +413,7 @@ if (/access_token=|error_description=/.test(location.hash) && /type=(invite|reco
   const banners = parceiros.filter(p => p.tipo === "banner" && p.imagem), logos = parceiros.filter(p => p.tipo !== "banner");
   const bp = $("#bannerPub");
   if (bp && banners.length) {
-    bp.innerHTML = `<span class="banner-rotulo">Publicidade</span>` + banners.map((b, i) => `<a class="banner${i === 0 ? " ativo" : ""}" href="${esc(b.link || "empresas.html")}" ${b.link ? 'target="_blank" rel="noopener sponsored"' : ""}><img src="${esc(b.imagem)}" alt="${esc(b.nome)}" loading="lazy"></a>`).join("");
+    bp.innerHTML = `<span class="banner-rotulo">Publicidade</span>` + banners.map((b, i) => `<a class="banner${i === 0 ? " ativo" : ""}" href="${esc(urlSegura(b.link) || "empresas.html")}" ${urlSegura(b.link) ? 'target="_blank" rel="noopener sponsored"' : ""}><img src="${esc(b.imagem)}" alt="${esc(b.nome)}" loading="lazy"></a>`).join("");
     bp.hidden = false;
     if (banners.length > 1 && !reduzir) { let k = 0; setInterval(() => { const bs = bp.querySelectorAll(".banner"); bs[k].classList.remove("ativo"); k = (k + 1) % bs.length; bs[k].classList.add("ativo"); }, 6000); }
   }
@@ -432,7 +441,7 @@ if (/access_token=|error_description=/.test(location.hash) && /type=(invite|reco
   if (noticias.length || DESTAQUES_EXTRA.length) { desenharDestaques(); setTimeout(atualizarPontos, 100); }
   const lp = $("#parceirosLista");
   if (lp) {
-    lp.innerHTML = logos.length ? logos.map(p => `<a class="parceiro" href="${esc(p.link || "#")}" target="_blank" rel="noopener" title="${esc(p.nome)}">${p.imagem ? `<img src="${esc(p.imagem)}" alt="${esc(p.nome)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))">` : `<span>${esc(p.nome)}</span>`}</a>`).join("")
+    lp.innerHTML = logos.length ? logos.map(p => `<a class="parceiro" href="${esc(urlSegura(p.link) || "empresas.html")}" target="_blank" rel="noopener" title="${esc(p.nome)}">${p.imagem ? `<img src="${esc(p.imagem)}" alt="${esc(p.nome)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:this.alt}))">` : `<span>${esc(p.nome)}</span>`}</a>`).join("")
       : `<p class="parceiros-vazio">Sê a primeira empresa a apoiar a cultura do distrito.</p>`;
   }
   const sec = $("#artistas");
@@ -443,7 +452,7 @@ if (/access_token=|error_description=/.test(location.hash) && /type=(invite|reco
         <span class="artista-area">${esc(a.categoria || "")}${a.concelho ? " · " + esc(a.concelho) : ""}</span>
         <h3><a href="artista.html?id=${a.id}">${esc(a.titulo)}</a></h3>
         <p>${esc((a.descricao || "").slice(0, 160))}${(a.descricao || "").length > 160 ? "…" : ""}</p>
-        <div class="artista-links">${a.site ? `<a href="${esc(a.site)}" target="_blank" rel="noopener">Site</a>` : ""}${a.rede ? `<a href="${esc(a.rede)}" target="_blank" rel="noopener">Redes</a>` : ""}</div>
+        <div class="artista-links">${urlSegura(a.site) ? `<a href="${esc(urlSegura(a.site))}" target="_blank" rel="noopener">Site</a>` : ""}${urlSegura(a.rede) ? `<a href="${esc(urlSegura(a.rede))}" target="_blank" rel="noopener">Redes</a>` : ""}</div>
       </div>
     </article>`).join("");
     sec.hidden = false; observarReveal($$("#artistasLista [data-reveal]"));
@@ -463,7 +472,8 @@ if (/access_token=|error_description=/.test(location.hash) && /type=(invite|reco
   const saltar = $("#aberturaSaltar");
   const terminar = () => { vivo = false; document.body.classList.add("revelado"); document.body.classList.remove("sem-rolar"); ab.remove(); };
   // Quem chega por um link para uma secção (ex.: "Agenda" noutra página → ./#agenda) vai direto, sem abertura
-  if (reduzir || alvoDoLink()) { terminar(); return; }
+  if (reduzir || alvoDoLink() || document.documentElement.classList.contains("sem-abertura")) { terminar(); return; }
+  try { sessionStorage.setItem("ac-abertura", "1"); } catch { /* modo privado: mostra sempre */ }
   document.body.classList.add("sem-rolar");
   requestAnimationFrame(() => ab.classList.add("pronta"));
 

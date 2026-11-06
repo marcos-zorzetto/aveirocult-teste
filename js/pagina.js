@@ -7,7 +7,8 @@ const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julh
 const DIAS = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
 const dataLonga = iso => { if (!iso) return ""; const d = new Date(iso + "T12:00:00"); return `${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`; };
 const paragrafos = t => esc(t || "").split(/\n{2,}|\r\n\r\n/).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
-const ligacao = u => /^https?:\/\//i.test(u || "") ? u : u ? "https://" + u : "";
+// Link externo seguro: só http(s), com domínio válido e sem espaços (texto como "Entrada livre" não vira botão)
+const ligacao = u => { let x = String(u || "").trim(); if (!x) return ""; if (!/^https?:\/\//i.test(x)) x = "https://" + x; try { const h = new URL(x); return /^https?:$/.test(h.protocol) && /\./.test(h.hostname) && !/\s/.test(x) ? h.href : ""; } catch { return ""; } };
 
 const tipo = document.body.dataset.tipo;
 const params = new URLSearchParams(location.search);
@@ -81,7 +82,7 @@ function mostrarEvento(e) {
     <div class="pg-corpo">${paragrafos(e.descricao)}</div>
     ${tags ? `<div class="pg-tags">${tags}</div>` : ""}
     <div class="pg-acoes">
-      ${e.link ? `<a class="btn btn-primario" href="${esc(ligacao(e.link))}" target="_blank" rel="noopener">Bilhetes e mais informação <svg><use href="#i-seta"/></svg></a>` : ""}
+      ${ligacao(e.link) ? `<a class="btn btn-primario" href="${esc(ligacao(e.link))}" target="_blank" rel="noopener">Bilhetes e mais informação <svg><use href="#i-seta"/></svg></a>` : ""}
       <button class="btn btn-escuro" id="partilhar" type="button"><svg><use href="#i-partilhar"/></svg><span>Partilhar</span></button>
       <a class="btn btn-contorno" href="./#agenda">Ver mais eventos</a>
     </div>`;
@@ -91,7 +92,7 @@ function mostrarEvento(e) {
     ...(semanal ? { eventSchedule: { "@type": "Schedule", repeatFrequency: "P1W", byDay: e.dias_semana.map(d => "https://schema.org/" + DIAS_SCHEMA[d]), startDate: e.data, ...(e.repete_ate ? { endDate: e.repete_ate } : {}), ...(e.hora ? { startTime: e.hora.slice(0, 5) } : {}) } } : {}),
     eventStatus: "https://schema.org/EventScheduled", eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: { "@type": "Place", name: e.local || e.concelho || "Distrito de Aveiro", address: { "@type": "PostalAddress", addressLocality: e.concelho || "Aveiro", addressRegion: "Aveiro", addressCountry: "PT" } },
-    ...(e.imagem ? { image: [e.imagem] } : {}), description: (e.descricao || "").slice(0, 500), ...(e.link ? { url: ligacao(e.link) } : {}),
+    ...(e.imagem ? { image: [e.imagem] } : {}), description: (e.descricao || "").slice(0, 500), ...(ligacao(e.link) ? { url: ligacao(e.link) } : {}),
     organizer: { "@type": "Organization", name: "Aveiro Cult", url: BASE } });
   partilha(e.titulo);
 }
@@ -103,14 +104,14 @@ function mostrarArtista(a) {
     <h1>${esc(a.titulo)}</h1>
     <div class="pg-corpo">${paragrafos(a.descricao)}</div>
     <div class="pg-acoes">
-      ${a.site ? `<a class="btn btn-primario" href="${esc(ligacao(a.site))}" target="_blank" rel="noopener">Site <svg><use href="#i-seta"/></svg></a>` : ""}
-      ${a.rede ? `<a class="btn btn-escuro" href="${esc(ligacao(a.rede))}" target="_blank" rel="noopener"><svg><use href="#i-insta"/></svg>Redes sociais</a>` : ""}
+      ${ligacao(a.site) ? `<a class="btn btn-primario" href="${esc(ligacao(a.site))}" target="_blank" rel="noopener">Site <svg><use href="#i-seta"/></svg></a>` : ""}
+      ${ligacao(a.rede) ? `<a class="btn btn-escuro" href="${esc(ligacao(a.rede))}" target="_blank" rel="noopener"><svg><use href="#i-insta"/></svg>Redes sociais</a>` : ""}
       <button class="btn btn-escuro" id="partilhar" type="button"><svg><use href="#i-partilhar"/></svg><span>Partilhar</span></button>
       <a class="btn btn-contorno" href="./#artistas">Ver mais artistas</a>
     </div>`;
   meta(a.titulo, (a.descricao || "").slice(0, 155), a.imagem);
   ld({ "@context": "https://schema.org", "@type": a.categoria === "Promotor" ? "Organization" : "PerformingGroup", name: a.titulo, description: (a.descricao || "").slice(0, 500),
-    ...(a.imagem ? { image: a.imagem } : {}), ...(a.site ? { url: ligacao(a.site) } : {}), ...(a.concelho ? { address: { "@type": "PostalAddress", addressLocality: a.concelho, addressRegion: "Aveiro", addressCountry: "PT" } } : {}) });
+    ...(a.imagem ? { image: a.imagem } : {}), ...(ligacao(a.site) ? { url: ligacao(a.site) } : {}), ...(a.concelho ? { address: { "@type": "PostalAddress", addressLocality: a.concelho, addressRegion: "Aveiro", addressCountry: "PT" } } : {}) });
   partilha(a.titulo);
 }
 
@@ -124,7 +125,7 @@ function mostrarNoticia(n) {
     ${n.resumo ? `<p class="pg-lead">${esc(n.resumo)}</p>` : ""}
     <div class="pg-corpo">${n.corpo ? paragrafos(n.corpo) : ""}</div>
     <div class="pg-acoes">
-      ${n.link_original ? `<a class="btn btn-primario" href="${esc(n.link_original)}" target="_blank" rel="noopener">Ler o artigo completo <svg><use href="#i-seta"/></svg></a>` : ""}
+      ${ligacao(n.link_original) ? `<a class="btn btn-primario" href="${esc(ligacao(n.link_original))}" target="_blank" rel="noopener">Ler o artigo completo <svg><use href="#i-seta"/></svg></a>` : ""}
       <button class="btn btn-escuro" id="partilhar" type="button"><svg><use href="#i-partilhar"/></svg><span>Partilhar</span></button>
       <a class="btn btn-contorno" href="./#noticias">Mais notícias</a>
     </div>`;

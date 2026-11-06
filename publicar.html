@@ -22,9 +22,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css?v=30">
-  <link rel="stylesheet" href="css/pagina.css?v=4">
-  <link rel="stylesheet" href="css/conta.css?v=2">
+  <link rel="stylesheet" href="css/estilo.css?v=32">
+  <link rel="stylesheet" href="css/pagina.css?v=6">
+  <link rel="stylesheet" href="css/conta.css?v=3">
 </head>
 <body class="revelado pagina-interna publicar" data-tipo="publicar">
 <a class="saltar-conteudo" href="#conteudo">Saltar para o conteúdo</a>
@@ -76,7 +76,7 @@
 
       <div class="formulario porta-conta" id="portaConta" hidden>
         <span class="form-ok-icone"><svg><use href="#i-pessoa"/></svg></span>
-        <h3>Entra para publicar</h3>
+        <h2 class="cartao-titulo">Entra para publicar</h2>
         <p>Para divulgar precisas de uma conta no Aveiro Cult. Cria-a num minuto, sem esperar por aprovação, e acompanha cada publicação em <b>A minha conta</b>.</p>
         <div class="porta-botoes">
           <a class="btn btn-primario" href="conta.html?criar=1&amp;voltar=divulgar">Criar conta</a>
@@ -84,7 +84,7 @@
         </div>
       </div>
 
-      <form class="formulario" id="formDivulgar" novalidate>
+      <form class="formulario" id="formDivulgar" novalidate hidden>
         <div class="segmento" role="tablist" aria-label="Tipo de publicação">
           <button type="button" class="on" data-tipo="evento" role="tab" aria-selected="true"><svg><use href="#i-calendario"/></svg> Evento</button>
           <button type="button" data-tipo="artista" role="tab" aria-selected="false"><svg><use href="#i-mic"/></svg> Artista / portfólio</button>
@@ -152,7 +152,7 @@
 
       <div class="form-ok" id="formOk" hidden>
         <span class="form-ok-icone"><svg><use href="#i-sino"/></svg></span>
-        <h3>Recebido, obrigado!</h3>
+        <h2 class="cartao-titulo">Recebido, obrigado!</h2>
         <p id="formOkTexto">A tua publicação vai ser revista e, assim que for aprovada, aparece no site e na app.</p>
         <div class="form-ok-botoes"><button class="btn btn-escuro" type="button" id="formOutro">Enviar outra</button><a class="btn btn-contorno" href="conta.html">Ver as minhas publicações</a></div>
       </div>

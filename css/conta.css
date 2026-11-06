@@ -56,3 +56,4 @@
 .publicar .pg h1 { font-size: clamp(30px, 4.4vw, 52px); margin-bottom: 0; }
 .publicar .pg h1 em { font-style: normal; color: var(--primaria); }
 .publicar .titulo-nota { max-width: 380px; }
+.publicar .cartao-titulo { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; line-height: 1.1; margin: 0; }

@@ -2,6 +2,8 @@
    Entra com a conta Supabase (email + palavra-passe). Só emails na tabela "moderadores" veem e alteram submissões. */
 const BD = { url: "https://otcpgtauymtavygscxfo.supabase.co", chave: "sb_publishable_DiaWIBUyBbCHnCDolUWFuw_fjONpncM" };
 const $ = s => document.querySelector(s);
+// Só links http(s) ficam clicáveis no painel (um "javascript:" enviado por um cliente aparece só como texto)
+const urlSegura = u => { const x = String(u || "").trim(); return /^https?:\/\/[^\s]+$/i.test(x) ? x : ""; };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const toast = $("#toast");
 const avisar = m => { toast.textContent = m; toast.classList.add("mostrar"); setTimeout(() => toast.classList.remove("mostrar"), 2800); };
@@ -101,7 +103,7 @@ async function carregar() {
   await lerClientes(itens.map(i => i.autor));
   $("#vazio").hidden = itens.length > 0;
   $("#lista").innerHTML = itens.map(i => `<article class="item" data-id="${i.id}">
-    <div class="item-img">${i.imagem ? `<a href="${esc(i.imagem)}" target="_blank" rel="noopener"><img src="${esc(i.imagem)}" alt="" onerror="this.parentElement.parentElement.textContent='imagem indisponível'"></a>` : "sem imagem"}</div>
+    <div class="item-img">${i.imagem ? `<a href="${esc(urlSegura(i.imagem) || "#")}" target="_blank" rel="noopener"><img src="${esc(i.imagem)}" alt="" onerror="this.parentElement.parentElement.textContent='imagem indisponível'"></a>` : "sem imagem"}</div>
     <div class="item-corpo">
       <span class="etiq">${i.tipo === "evento" ? "Evento" : "Artista"} <i>· ${esc(i.categoria || "")}${i.concelho ? " · " + esc(i.concelho) : ""}</i></span>
       <h3>${esc(i.titulo)}${emDestaque(i) ? `<span class="destaque-on">★ Em destaque até ${dataPt(i.destaque_ate)}</span>` : ""}</h3>
@@ -109,7 +111,7 @@ async function carregar() {
       ${i.tipo === "evento" ? `<p class="meta">${i.recorrencia === "semanal" ? `<b>Todas as semanas</b> (${(i.dias_semana || []).map(d => ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][d]).join(", ")})${i.repete_ate ? " até " + dataPt(i.repete_ate) : ""} · desde ${dataPt(i.data)}` : `${dataPt(i.data)}${i.data_fim && i.data_fim.slice(0, 10) !== i.data ? " a " + dataPt(i.data_fim.slice(0, 10)) : ""}`}${i.hora ? " · " + esc(i.hora.slice(0, 5)) : ""}${i.local ? " · " + esc(i.local) : ""}</p>` : ""}
       <p class="desc">${esc(i.descricao || "")}</p>
       ${i.tipo === "evento" ? `<p class="tags">${(i.tags || []).length ? i.tags.map(t => `<span>#${esc(t)}</span>`).join("") : "<i>sem tags</i>"} <button class="ligacao" data-acao="tags">editar tags</button></p>` : ""}
-      <p class="links">${[i.link, i.site, i.rede].filter(Boolean).map(l => `<a href="${esc(l)}" target="_blank" rel="noopener">${esc(l)}</a>`).join("")}</p>
+      <p class="links">${[i.link, i.site, i.rede].filter(Boolean).map(l => urlSegura(l) ? `<a href="${esc(urlSegura(l))}" target="_blank" rel="noopener">${esc(l)}</a>` : `<span title="Link inválido">${esc(l)}</span>`).join("")}</p>
       <p class="quem">Enviado por <b>${esc(i.responsavel || "?")}</b> · ${esc(i.email || "")} · ${dataPt(i.criado_em)}${i.nota_moderacao ? ` · ${i.estado === "rejeitado" ? "motivo" : "nota"}: ${esc(i.nota_moderacao)}` : ""} ${linhaAviso(i)}</p>
       <div class="acoes">
         ${i.estado !== "aprovado" ? `<button class="aprovar" data-acao="aprovado">Aprovar e publicar</button>` : ""}
@@ -340,7 +342,7 @@ async function carregarParceiros() {
       <span class="estado ${p.ativo ? "" : "rascunho"}">${p.ativo ? "Ativo" : "Inativo"}</span>
       <span class="etiq">${p.tipo === "banner" ? "Banner" : "Logótipo"} · ${esc(p.plano || "Sem plano")} · ordem ${p.ordem ?? 0}${p.ate ? ` · ${p.ate >= hojeIso() ? "pago até" : "expirou a"} ${dataPt(p.ate)}` : ""}</span>
       <h3>${esc(p.nome)}</h3>
-      <p class="links">${p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.link)}</a>` : ""}</p>
+      <p class="links">${urlSegura(p.link) ? `<a href="${esc(urlSegura(p.link))}" target="_blank" rel="noopener">${esc(p.link)}</a>` : p.link ? esc(p.link) : ""}</p>
       <div class="acoes">
         <button class="pendente" data-parceiro="editar">Editar</button>
         <button class="${p.ativo ? "rejeitar" : "aprovar"}" data-parceiro="${p.ativo ? "desativar" : "ativar"}">${p.ativo ? "Desativar" : "Ativar"}</button>
